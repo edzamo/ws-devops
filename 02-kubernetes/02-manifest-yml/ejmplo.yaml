@@ -1,0 +1,21 @@
+apiVersion: apps/v1           # Especifica la versión de la API de Kubernetes que se está utilizando para este manifiesto
+kind: Deployment              # Indica que este recurso es un Deployment
+metadata:
+  name: nginx-deployment      # Nombre del Deployment
+spec:
+  replicas: 2                 # Número de réplicas (pods) que se desean ejecutar
+  selector:
+    matchLabels:
+      app: nginx              # Selecciona los pods que tengan la etiqueta 'app: nginx'
+  template:
+    metadata:
+      labels:
+        app: nginx            # Etiquetas que tendrán los pods creados por este Deployment
+    spec:
+      containers:
+        - name: nginx         # Nombre del contenedor
+          image: nginx:latest # Imagen de Docker que se usará para el contenedor
+          ports:
+            - containerPort: 80 # Puerto que expondrá el contenedor dentro del pod
+
+            
