@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: coffee-shop
+      MYSQL_USER: ezamora
+      MYSQL_PASSWORD: ezamora
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+# ESTA ES LA PARTE QUE FALTA O ESTÁ MAL ESCRITA:
+volumes:
+  mysql_data:
