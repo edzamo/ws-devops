@@ -23,7 +23,8 @@ Hay tres tipos:
 | `COBERTURA_MINIMA` | `30` | Cobertura mínima de líneas (%). Es la línea base actual: la cobertura nunca debe bajar de ahí | 3 |
 | `MODO_ESTRICTO` | `false` | `true`: los hallazgos de seguridad detienen el pipeline. `false`: modo auditoría, solo los reporta | 1, 6, 8, 10 |
 | `PUBLICAR` | `false` | `true`: publica en Docker Hub. `false`: *dry run* | 9 |
-| `DOCKER_USER` | `edzamo13` | Cuenta de Docker Hub dueña de las imágenes | 7, 8, 9, 10 |
+| `REGISTRY` | `edzamo13` | Registro de imágenes. Docker Hub: la cuenta. AWS ECR: `<cuenta>.dkr.ecr.<región>.amazonaws.com`. Azure ACR: `<nombre>.azurecr.io` (antes `DOCKER_USER`, que se sigue aceptando) | 7, 8, 9, 10 |
+| `REGISTRY_AUTH` | `dockerhub` | Quién hace el login al registro: `dockerhub` (la etapa 9, con el token) o `plataforma` (el orquestador ya se autenticó con la identidad de la nube) | 9 |
 | `PREFIX` | `austro` | Prefijo de proyecto en el nombre de la imagen (`edzamo13/austro-<servicio>`) | 5, 7, 9 |
 
 ### Secretos
@@ -146,7 +147,19 @@ No pongas tokens en archivos versionados. Si los guardas en un archivo local, qu
 
 ---
 
-## 5. Resumen: dónde va cada cosa
+## 5. Azure DevOps y AWS
+
+| Variable | Azure DevOps | AWS |
+|---|---|---|
+| Parámetros (`RAMA`, `COBERTURA_MINIMA`…) | `parameters:` del YAML → formulario *Run pipeline* | Parámetros del stack de CloudFormation y `env.variables` del buildspec |
+| Secretos | Pipelines → Library → **Variable group** enlazado a **Key Vault**, pasados en `env:` de cada paso | **Secrets Manager** / **Parameter Store**, en `env.secrets-manager` del buildspec |
+| Login al registro | Service connection a ACR (`REGISTRY_AUTH=plataforma`) | Rol IAM del build + `aws ecr get-login-password` (`REGISTRY_AUTH=plataforma`) |
+| `REGISTRY` | `<nombre>.azurecr.io` (variable `ACR_LOGIN_SERVER`) | `<cuenta>.dkr.ecr.<región>.amazonaws.com` (lo calcula la plantilla) |
+| Aprobación | Environment → *Approvals and checks* | Acción *Manual approval* de CodePipeline |
+
+Paso a paso en [orchestrators/azure-devops/README.md](../orchestrators/azure-devops/README.md) y [orchestrators/aws-codepipeline/README.md](../orchestrators/aws-codepipeline/README.md).
+
+## 6. Resumen: dónde va cada cosa
 
 | Variable | GitHub Actions | Jenkins | Laptop |
 |---|---|---|---|

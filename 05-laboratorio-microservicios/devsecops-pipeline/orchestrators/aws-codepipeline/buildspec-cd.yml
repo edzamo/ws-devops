@@ -1,0 +1,31 @@
+# CodeBuild — CD de poc-credit-evaluation (etapas 9 y 10). Corre después de la aprobación manual de CodePipeline.
+# Fuentes: ws-devops (primaria), AppSrc (el mismo commit que pasó el CI) y CiOutput (las imágenes del CI).
+version: 0.2
+
+env:
+  shell: bash                # arreglos y `source` necesitan bash (por defecto es sh)
+  variables:
+    PUBLICAR: "false"          # la plantilla lo sobrescribe según el ambiente
+    REGISTRY_AUTH: plataforma  # el login a ECR lo hace el rol IAM del build, no un token
+
+phases:
+  install:
+    commands:
+      - export APP_DIR="$CODEBUILD_SRC_DIR_AppSrc" OUT_DIR="$CODEBUILD_SRC_DIR/salida"
+      - export SCRIPTS="$CODEBUILD_SRC_DIR/05-laboratorio-microservicios/devsecops-pipeline/stages"
+  pre_build:
+    commands:
+      - gunzip -c "$CODEBUILD_SRC_DIR_CiOutput/imagenes.tar.gz" | docker load
+      # Login a ECR con la identidad del rol IAM: credenciales temporales, sin secretos guardados
+      - |
+        if [ "$PUBLICAR" = "true" ]; then
+          aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$REGISTRY"
+        fi
+  build:
+    commands:
+      - '"$SCRIPTS/09-image-publish.sh"'
+      - '"$SCRIPTS/10-deploy-dast.sh"'
+
+artifacts:
+  files:
+    - salida/**/*

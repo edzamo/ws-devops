@@ -14,6 +14,8 @@
 
 ## 2. Llevarlo a AWS o Azure
 
+Hay ejemplos completos en [`orchestrators/azure-devops/`](../orchestrators/azure-devops/) y [`orchestrators/aws-codepipeline/`](../orchestrators/aws-codepipeline/), cada uno con su guía de configuración.
+
 Las etapas y los scripts no cambian. Cambian el orquestador y los servicios a los que se conectan:
 
 | Pieza | Esta simulación | AWS | Azure |

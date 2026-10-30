@@ -17,7 +17,12 @@ OUT_DIR="$(realpath -m "${OUT_DIR:-$TRABAJO_DIR/salida}")"
 mkdir -p "$OUT_DIR"/{reportes,artefactos}
 
 # Parámetros del pipeline
-DOCKER_USER="${DOCKER_USER:-edzamo13}"
+# Registro de imágenes. Docker Hub: la cuenta (edzamo13). AWS ECR: <cuenta>.dkr.ecr.<región>.amazonaws.com.
+# Azure ACR: <nombre>.azurecr.io. DOCKER_USER se acepta por compatibilidad.
+REGISTRY="${REGISTRY:-${DOCKER_USER:-edzamo13}}"
+# Quién hace el login al registro: "dockerhub" (la etapa 9, con DOCKERHUB_USERNAME/TOKEN) o
+# "plataforma" (el orquestador ya autenticó con la identidad de la nube: rol IAM en AWS, service connection en Azure)
+REGISTRY_AUTH="${REGISTRY_AUTH:-dockerhub}"
 PREFIX="${PREFIX:-austro}"
 COBERTURA_MINIMA="${COBERTURA_MINIMA:-30}"  # línea base actual del proyecto: la cobertura nunca debe bajar de aquí
 MODO_ESTRICTO="${MODO_ESTRICTO:-false}"   # false: los escáneres de seguridad reportan sin detener el pipeline
@@ -86,4 +91,4 @@ COMMIT="$(git -C "$APP_DIR" rev-parse --short=7 HEAD 2>/dev/null || echo sin-cod
 
 # Tag inmutable y trazable: <versión del código>-<commit>. Nunca `latest`.
 tag_de() { echo "$(version_de "$1")-$COMMIT"; }
-imagen_de() { echo "$DOCKER_USER/$PREFIX-$1:$(tag_de "$1")"; }
+imagen_de() { echo "$REGISTRY/$PREFIX-$1:$(tag_de "$1")"; }

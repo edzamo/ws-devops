@@ -70,8 +70,15 @@ FUERA de esta carpeta, a propósito:
 
 **La regla de diseño:** el orquestador es **delgado** (solo decide el qué y el cuándo) y la lógica es **gruesa** (scripts). Por eso:
 
-- GitHub Actions y Jenkins llaman **los mismos scripts en el mismo orden**: `run: "$SCRIPTS/02-build-test.sh"` en el YAML, `sh '$SCRIPTS/02-build-test.sh'` en el Jenkinsfile.
-- Migrar a Azure DevOps, GitLab o AWS CodeBuild es escribir **un archivo de orquestación nuevo**. Los scripts no cambian.
+- Los cuatro orquestadores llaman **los mismos scripts en el mismo orden**:
+
+  | Orquestador | Lenguaje | Cómo llama a la etapa 2 |
+  |---|---|---|
+  | GitHub Actions | YAML | `run: "$SCRIPTS/02-build-test.sh"` |
+  | Jenkins | Groovy (`Jenkinsfile`) | `sh '$SCRIPTS/02-build-test.sh'` |
+  | Azure DevOps | YAML | `- script: "$(SCRIPTS)/02-build-test.sh"` |
+  | AWS CodeBuild | YAML (`buildspec`) | `- '"$SCRIPTS/02-build-test.sh"'` |
+- Migrar de plataforma es escribir **un archivo de orquestación nuevo**: así se hicieron los ejemplos de [Azure DevOps](../orchestrators/azure-devops/) y [AWS](../orchestrators/aws-codepipeline/). Lo único que se ajustó en los scripts fue que la etapa 9 acepte un login al registro hecho por la nube (`REGISTRY_AUTH=plataforma`).
 - Cualquier etapa se puede ejecutar y depurar en una laptop ([`run-local.sh`](../run-local.sh)).
 
 El costo: se aprovechan menos las funciones nativas de cada plataforma (caché, paralelismo, plugins). Por eso lo nativo se deja en el orquestador: checkout, secretos, aprobaciones, guardar evidencia.

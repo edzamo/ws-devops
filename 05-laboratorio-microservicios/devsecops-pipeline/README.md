@@ -2,7 +2,14 @@
 
 Pipeline CI/CD con controles de seguridad integrados (DevSecOps) para `poc-credit-evaluation`: 1 frontend Angular y 2 microservicios Quarkus. Lleva el código desde el repositorio hasta un registro de imágenes y un ambiente desplegado, con tests, cobertura, calidad, SAST, SCA, escaneo de imágenes, aprobación y DAST.
 
-Un solo conjunto de scripts, dos orquestadores intercambiables: **GitHub Actions** y **Jenkins**.
+Un solo conjunto de scripts y cuatro orquestadores intercambiables:
+
+| Orquestador | Archivo | Estado |
+|---|---|---|
+| GitHub Actions | [`.github/workflows/poc-credit-evaluation-cicd.yml`](../../.github/workflows/poc-credit-evaluation-cicd.yml) | Listo para ejecutarse con un push a `feature/*` |
+| Jenkins | [`orchestrators/jenkins/Jenkinsfile`](orchestrators/jenkins/Jenkinsfile) | Listo, con Jenkins y SonarQube locales preconfigurados |
+| Azure DevOps | [`orchestrators/azure-devops/azure-pipelines.yml`](orchestrators/azure-devops/azure-pipelines.yml) | Ejemplo de referencia: registro en ACR, secretos en Key Vault |
+| AWS | [`orchestrators/aws-codepipeline/`](orchestrators/aws-codepipeline/) | Ejemplo de referencia: CodePipeline + CodeBuild + ECR, infraestructura en CloudFormation |
 
 ## 📚 Documentación
 
@@ -25,6 +32,8 @@ devsecops-pipeline/
 ├── docs/                               Documentación (01 a 05)
 ├── orchestrators/                      CAPA DE ORQUESTACIÓN: el qué y el cuándo
 │   ├── github-actions/README.md        Dónde está y cómo se dispara el workflow
+│   ├── azure-devops/                   azure-pipelines.yml + guía de configuración
+│   ├── aws-codepipeline/               pipeline.yml (CloudFormation) + buildspec-ci/cd.yml + guía
 │   └── jenkins/
 │       ├── Jenkinsfile                 Orquestador Jenkins
 │       └── docker-compose.yml, Dockerfile, plugins.txt, casc.yaml, .env.example
