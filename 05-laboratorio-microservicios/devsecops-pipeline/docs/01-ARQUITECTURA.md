@@ -9,6 +9,7 @@ Documento para arquitectos de soluciones y arquitectos DevOps. Explica **cómo f
 | [03-CONFIGURACION.md](03-CONFIGURACION.md) | DevOps, operaciones | Variables y secretos, y dónde se configuran en GitHub y Jenkins |
 | [04-GOBERNANZA-Y-NUBE.md](04-GOBERNANZA-Y-NUBE.md) | Arquitectos, seguridad, auditoría | Controles de gobernanza y cómo llevarlo a AWS o Azure |
 | [05-DEVSECOPS-APRENDIZAJE.md](05-DEVSECOPS-APRENDIZAJE.md) | Todos (estudio) | Cada control explicado, herramientas libres y de pago, ruta de junior a arquitecto |
+| [06-PLANTILLAS-DE-PIPELINE.md](06-PLANTILLAS-DE-PIPELINE.md) | Arquitectos, DevOps | Plantillas en Azure, GitHub, Jenkins y AWS, de lo básico a lo avanzado |
 
 ---
 
@@ -181,7 +182,7 @@ devsecops-pipeline-templates/                    ms-orchestrator-credit-evaluati
 | Control central | Un control nuevo se agrega una vez en la plantilla y aplica a todos |
 | Versionado | Los equipos adoptan la plantilla v3 cuando están listos, sin romper la v2 |
 
-`devsecops-pipeline/` ya cumple el papel de ese repositorio de plataforma. El ejemplo de [Azure DevOps](../orchestrators/azure-devops/) ya está armado así: un [pipeline corto](../orchestrators/azure-devops/caller/azure-pipelines.yml) para el repo de la aplicación que extiende una [plantilla central](../orchestrators/azure-devops/templates/java/quarkus/maven/devsecops.yml) fijada a un tag. Es el mismo patrón de pipelines reales de banca: el pipeline de la aplicación tiene unas 20 líneas y todo lo demás viene de la plantilla.
+`devsecops-pipeline/` ya cumple el papel de ese repositorio de plataforma. Cómo funcionan las plantillas en cada plataforma, y los niveles de madurez, en [06-PLANTILLAS-DE-PIPELINE.md](06-PLANTILLAS-DE-PIPELINE.md). El ejemplo de [Azure DevOps](../orchestrators/azure-devops/) ya está armado así: un [pipeline corto](../orchestrators/azure-devops/caller/azure-pipelines.yml) para el repo de la aplicación que extiende una [plantilla central](../orchestrators/azure-devops/templates/java/quarkus/maven/devsecops.yml) fijada a un tag. Es el mismo patrón de pipelines reales de banca: el pipeline de la aplicación tiene unas 20 líneas y todo lo demás viene de la plantilla.
 
 Dos detalles que separan una implementación madura de una que no lo es:
 

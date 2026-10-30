@@ -20,6 +20,7 @@ Un solo conjunto de scripts y cuatro orquestadores intercambiables:
 | 3 | [Configuración](docs/03-CONFIGURACION.md) | DevOps, operaciones | Cada variable y secreto, y dónde se configura en GitHub, Jenkins y local |
 | 4 | [Gobernanza y nube](docs/04-GOBERNANZA-Y-NUBE.md) | Arquitectos, seguridad, auditoría | Controles de gobernanza y equivalencias en AWS y Azure |
 | 5 | [DevSecOps: aprendizaje](docs/05-DEVSECOPS-APRENDIZAJE.md) | Todos (estudio) | SAST, SCA, DAST/ZAP y demás controles, herramientas libres y de pago, píldoras de junior a arquitecto |
+| 6 | [Plantillas de pipeline](docs/06-PLANTILLAS-DE-PIPELINE.md) | Arquitectos, DevOps | Cómo funcionan las plantillas (Azure `extends`, GitHub reusable workflows, Jenkins Shared Library, AWS fábrica de pipelines), niveles de madurez, Jenkins en la nube |
 
 ## 🗂️ Estructura
 
@@ -29,7 +30,7 @@ Un solo conjunto de scripts y cuatro orquestadores intercambiables:
 
 devsecops-pipeline/
 ├── README.md                           Este documento
-├── docs/                               Documentación (01 a 05)
+├── docs/                               Documentación (01 a 06)
 ├── orchestrators/                      CAPA DE ORQUESTACIÓN: el qué y el cuándo
 │   ├── github-actions/README.md        Dónde está y cómo se dispara el workflow
 │   ├── azure-devops/                   caller/ (pipeline corto de la app) + templates/ (plantilla central) + guía
