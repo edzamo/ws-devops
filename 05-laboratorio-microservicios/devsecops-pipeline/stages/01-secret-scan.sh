@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Etapa 1 — Detección de secretos (va primero: es lo más barato y un secreto filtrado es lo más grave)
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "1. Secretos (Gitleaks) — commit $COMMIT"
 
 set +e

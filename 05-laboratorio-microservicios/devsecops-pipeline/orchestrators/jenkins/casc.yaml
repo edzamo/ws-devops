@@ -24,7 +24,7 @@ credentials:
 
 jobs:
   - script: >
-      pipelineJob('pipeline-poc-credit-evaluation') {
+      pipelineJob('poc-credit-evaluation-cicd') {
         description('CI/CD simulado de poc-credit-evaluation. Jenkinsfile en ws-devops.')
         definition {
           cpsScm {
@@ -34,7 +34,7 @@ jobs:
                 branch('${WS_DEVOPS_RAMA:-main}')
               }
             }
-            scriptPath('05-laboratorio-microservicios/workspace/jenkins/Jenkinsfile')
+            scriptPath('05-laboratorio-microservicios/devsecops-pipeline/orchestrators/jenkins/Jenkinsfile')
           }
         }
       }

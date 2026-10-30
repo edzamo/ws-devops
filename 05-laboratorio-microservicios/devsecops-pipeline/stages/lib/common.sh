@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Funciones y variables comunes a todas las etapas del pipeline.
-# Cada etapa hace `source lib.sh`. Las variables se pueden sobrescribir desde GitHub Actions o Jenkins.
+# Cada etapa hace `source lib/common.sh`. Las variables se pueden sobrescribir desde GitHub Actions o Jenkins.
 set -euo pipefail
 
-WORKSPACE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-# Código a construir (lo usa 00-descargar-codigo.sh; en GitHub Actions y Jenkins lo descarga la herramienta)
+# Código a construir (lo usa 00-checkout.sh; en GitHub Actions y Jenkins lo descarga la herramienta)
 REPO_URL="${REPO_URL:-https://github.com/edzamo/poc-credit-evaluation.git}"
 RAMA="${RAMA:-main}"
 

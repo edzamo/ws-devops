@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Etapa 7 — Construir las imágenes a partir de los artefactos YA generados en la etapa 2
 # ("construir una vez"): la imagen contiene exactamente el jar que pasó los tests, no uno recompilado.
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "7. Imágenes Docker"
 
 for svc in "${SERVICIOS[@]}"; do
   if [[ " ${BACKENDS[*]} " == *" $svc "* ]]; then
-    dockerfile="$WORKSPACE_DIR/docker/Dockerfile.quarkus"; contexto="$APP_DIR/$svc/target/quarkus-app"
+    dockerfile="$PIPELINE_DIR/container-images/Dockerfile.quarkus"; contexto="$APP_DIR/$svc/target/quarkus-app"
   else
     # Contexto mínimo: el build de Angular + nginx.conf (el .dockerignore del repo excluye dist/)
-    dockerfile="$WORKSPACE_DIR/docker/Dockerfile.frontend"; contexto="$OUT_DIR/contexto-$svc"
+    dockerfile="$PIPELINE_DIR/container-images/Dockerfile.frontend"; contexto="$OUT_DIR/contexto-$svc"
     rm -rf "$contexto" && mkdir -p "$contexto"
     cp -r "$APP_DIR/$svc/dist/$svc/browser" "$APP_DIR/$svc/nginx.conf" "$contexto/"
   fi

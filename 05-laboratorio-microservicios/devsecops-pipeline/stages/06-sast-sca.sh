@@ -4,7 +4,7 @@
 #   SCA (Trivy): busca CVE conocidos en las LIBRERÍAS de terceros. Analiza los jars reales que Maven resolvió en
 #   target/quarkus-app/lib (el pom.xml solo no basta: las versiones vienen del BOM de Quarkus) y el
 #   package-lock.json generado en la etapa 2.
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "6. SAST (Semgrep) + SCA (Trivy)"
 
 set +e

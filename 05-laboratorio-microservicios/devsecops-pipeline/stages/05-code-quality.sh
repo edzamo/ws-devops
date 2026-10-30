@@ -2,7 +2,7 @@
 # Etapa 5 — Calidad de código con SonarQube. Va después de los tests porque necesita las clases compiladas
 # y el reporte de cobertura de JaCoCo. `sonar.qualitygate.wait=true` hace que el pipeline espere el veredicto
 # del quality gate y falle si no pasa.
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000}"
 etapa "5. Calidad (SonarQube en $SONAR_HOST_URL)"
 

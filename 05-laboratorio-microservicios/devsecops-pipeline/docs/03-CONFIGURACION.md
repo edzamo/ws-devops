@@ -1,6 +1,6 @@
 # 🔧 Variables, secretos y dónde se configuran
 
-Todas las etapas leen su configuración de **variables de entorno**, definidas en [`scripts/lib.sh`](scripts/lib.sh). Cada herramienta (GitHub Actions, Jenkins, la laptop) solo cambia **dónde** se definen esas variables. Los scripts son los mismos.
+Todas las etapas ([`stages/`](../stages/)) leen su configuración de **variables de entorno**, definidas en [`stages/lib/common.sh`](../stages/lib/common.sh). Cada herramienta (GitHub Actions, Jenkins, la laptop) solo cambia **dónde** se definen esas variables. Los scripts son los mismos.
 
 Hay tres tipos:
 
@@ -56,7 +56,7 @@ Cómo crear el token de Docker Hub: hub.docker.com → *Account settings* → *P
 
 ### Parámetros → formulario de *Run workflow*
 
-Actions → **pipeline-poc-credit-evaluation** → *Run workflow*. El formulario sale de `on.workflow_dispatch.inputs` del [workflow](../../.github/workflows/pipeline-poc-credit-evaluation.yml):
+Actions → **poc-credit-evaluation-cicd** → *Run workflow*. El formulario sale de `on.workflow_dispatch.inputs` del [workflow](../../../.github/workflows/poc-credit-evaluation-cicd.yml):
 
 | Campo del formulario | Variable |
 |---|---|
@@ -93,10 +93,10 @@ GitHub crea el environment la primera vez que el workflow lo usa. Las reglas de 
 
 ## 3. Jenkins
 
-### Variables del `docker-compose` → archivo `jenkins/.env`
+### Variables del `docker-compose` → archivo `orchestrators/jenkins/.env`
 
 ```bash
-cd 05-laboratorio-microservicios/workspace/jenkins
+cd 05-laboratorio-microservicios/devsecops-pipeline/orchestrators/jenkins
 cp .env.example .env        # .env está en .gitignore: nunca se sube
 ```
 
@@ -107,11 +107,11 @@ cp .env.example .env        # .env está en .gitignore: nunca se sube
 | `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN` | Se convierten en la credencial `dockerhub` |
 | `WS_DEVOPS_REPO` / `WS_DEVOPS_RAMA` | De qué repo y rama lee Jenkins el `Jenkinsfile` (por defecto `ws-devops`, rama `main`) |
 
-Al arrancar, **Configuration as Code** ([`casc.yaml`](jenkins/casc.yaml)) lee esas variables y crea el usuario, la credencial y el job. No hay que configurar nada en la interfaz.
+Al arrancar, **Configuration as Code** ([`casc.yaml`](../orchestrators/jenkins/casc.yaml)) lee esas variables y crea el usuario, la credencial y el job. No hay que configurar nada en la interfaz.
 
 ### Parámetros → *Build with Parameters*
 
-Salen del bloque `parameters { }` del [`Jenkinsfile`](jenkins/Jenkinsfile): `REPO_URL`, `RAMA`, `COBERTURA_MINIMA`, `MODO_ESTRICTO` y `PUBLICAR`.
+Salen del bloque `parameters { }` del [`Jenkinsfile`](../orchestrators/jenkins/Jenkinsfile): `REPO_URL`, `RAMA`, `COBERTURA_MINIMA`, `MODO_ESTRICTO` y `PUBLICAR`.
 
 > Jenkins registra los parámetros en la **primera** ejecución del job, que corre con los valores por defecto. Desde la segunda aparece *Build with Parameters*.
 
@@ -136,13 +136,13 @@ En el `Jenkinsfile` la credencial solo existe dentro de `withCredentials { }` (e
 Las variables se exportan o se anteponen al comando:
 
 ```bash
-cd 05-laboratorio-microservicios/workspace
-./ejecutar-local.sh                                   # todo con los valores por defecto
-RAMA=feature/nueva COBERTURA_MINIMA=50 ./ejecutar-local.sh
-DOCKERHUB_USERNAME=edzamo13 DOCKERHUB_TOKEN=... PUBLICAR=true ./ejecutar-local.sh 9 9
+cd 05-laboratorio-microservicios/devsecops-pipeline
+./run-local.sh                                   # todo con los valores por defecto
+RAMA=feature/nueva COBERTURA_MINIMA=50 ./run-local.sh
+DOCKERHUB_USERNAME=edzamo13 DOCKERHUB_TOKEN=... PUBLICAR=true ./run-local.sh 9 9
 ```
 
-No pongas tokens en archivos versionados. Si los guardas en un archivo local, que esté en `.gitignore`, como `jenkins/.env`.
+No pongas tokens en archivos versionados. Si los guardas en un archivo local, que esté en `.gitignore`, como `orchestrators/jenkins/.env`.
 
 ---
 
@@ -154,4 +154,4 @@ No pongas tokens en archivos versionados. Si los guardas en un archivo local, qu
 | `REPO_URL` | Campo `repositorio` | Parámetro `REPO_URL` | `export` |
 | `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN` | Settings → Secrets → Actions | `.env` → credencial `dockerhub` | `export` (nunca en archivo versionado) |
 | Aprobación antes del deploy | Settings → Environments → required reviewers | Etapa `Aprobación` (`input`) | — |
-| `APP_DIR`, `OUT_DIR`, `DOCKER_MOUNT` | `env:` del workflow | `environment { }` del Jenkinsfile | Por defecto en `lib.sh` |
+| `APP_DIR`, `OUT_DIR`, `DOCKER_MOUNT` | `env:` del workflow | `environment { }` del Jenkinsfile | Por defecto en `stages/lib/common.sh` |

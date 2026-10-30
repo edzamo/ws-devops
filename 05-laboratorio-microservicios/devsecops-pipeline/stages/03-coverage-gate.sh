@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Etapa 3 — Quality gate de cobertura: el pipeline se detiene si la cobertura de líneas baja del mínimo
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "3. Cobertura mínima: $COBERTURA_MINIMA %"
 
 falla=0

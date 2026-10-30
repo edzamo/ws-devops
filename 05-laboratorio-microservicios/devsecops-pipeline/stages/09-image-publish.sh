@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Etapa 9 — Publicar en el registro. Solo si PUBLICAR=true; si no, es un "dry run" que muestra qué publicaría.
 # Requiere DOCKERHUB_USERNAME y DOCKERHUB_TOKEN (secrets del pipeline, nunca en el código).
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "9. Publicar en Docker Hub"
 
 if [[ "${PUBLICAR:-false}" != "true" ]]; then

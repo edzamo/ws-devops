@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Etapa 8 — Escanear las imágenes (CVE del sistema operativo base y de las librerías) y generar el SBOM
 # (la "lista de ingredientes" de cada imagen). Se hace ANTES de publicar: lo que no pasa, no sale.
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "8. Escaneo de imágenes + SBOM (Trivy)"
 
 TRIVY=(herramienta -v /var/run/docker.sock:/var/run/docker.sock --group-add "$(stat -c %g /var/run/docker.sock)"

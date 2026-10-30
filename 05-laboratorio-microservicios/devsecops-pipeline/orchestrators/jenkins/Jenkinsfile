@@ -1,5 +1,5 @@
 // Pipeline simulado CI/CD de poc-credit-evaluation (Laboratorio 05) — versión Jenkins.
-// La lógica de cada etapa vive en ../scripts/: este archivo solo las orquesta, igual que el workflow de GitHub Actions.
+// La lógica de cada etapa vive en ../../stages/: este archivo solo las orquesta, igual que el workflow de GitHub Actions.
 pipeline {
     agent any
 
@@ -21,7 +21,7 @@ pipeline {
     environment {
         APP_DIR          = "${WORKSPACE}/app"
         OUT_DIR          = "${WORKSPACE}/salida"
-        SCRIPTS          = "${WORKSPACE}/05-laboratorio-microservicios/workspace/scripts"
+        SCRIPTS          = "${WORKSPACE}/05-laboratorio-microservicios/devsecops-pipeline/stages"
         // Las herramientas corren en contenedores del Docker del host: comparten el workspace con el volumen de Jenkins
         DOCKER_MOUNT     = '--volumes-from jenkins'
         SONAR_HOST_URL   = 'http://sonarqube:9000'
@@ -39,14 +39,14 @@ pipeline {
         }
 
         // ─────────────────────────── CI ───────────────────────────
-        stage('1. Secretos (Gitleaks)')        { steps { sh '$SCRIPTS/01-secretos.sh' } }
+        stage('1. Secretos (Gitleaks)')        { steps { sh '$SCRIPTS/01-secret-scan.sh' } }
         stage('2. Build + tests')              { steps { sh '$SCRIPTS/02-build-test.sh' } }
-        stage('3. Cobertura mínima')           { steps { sh '$SCRIPTS/03-cobertura.sh' } }
-        stage('4. Verificar artefactos')       { steps { sh '$SCRIPTS/04-artefactos.sh' } }
-        stage('5. Calidad (SonarQube)')        { steps { sh '$SCRIPTS/05-sonar.sh' } }
+        stage('3. Cobertura mínima')           { steps { sh '$SCRIPTS/03-coverage-gate.sh' } }
+        stage('4. Verificar artefactos')       { steps { sh '$SCRIPTS/04-artifacts.sh' } }
+        stage('5. Calidad (SonarQube)')        { steps { sh '$SCRIPTS/05-code-quality.sh' } }
         stage('6. SAST + SCA')                 { steps { sh '$SCRIPTS/06-sast-sca.sh' } }
-        stage('7. Imágenes Docker')            { steps { sh '$SCRIPTS/07-imagenes.sh' } }
-        stage('8. Escaneo de imágenes + SBOM') { steps { sh '$SCRIPTS/08-escaneo-imagenes.sh' } }
+        stage('7. Imágenes Docker')            { steps { sh '$SCRIPTS/07-image-build.sh' } }
+        stage('8. Escaneo de imágenes + SBOM') { steps { sh '$SCRIPTS/08-image-scan.sh' } }
 
         // ─────────────────────────── CD ───────────────────────────
         // Gobernanza: una persona aprueba antes de publicar y desplegar (segregación de funciones)
@@ -63,7 +63,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub',
                                                   usernameVariable: 'DOCKERHUB_USERNAME',
                                                   passwordVariable: 'DOCKERHUB_TOKEN')]) {
-                    sh '$SCRIPTS/09-publicar.sh'
+                    sh '$SCRIPTS/09-image-publish.sh'
                 }
             }
         }

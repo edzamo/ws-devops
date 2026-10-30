@@ -1,12 +1,12 @@
 # Pipeline simulado CI/CD de poc-credit-evaluation (Laboratorio 05).
-# La lógica de cada etapa vive en 05-laboratorio-microservicios/workspace/scripts/: este archivo solo las orquesta.
-# La versión Jenkins (workspace/jenkins/Jenkinsfile) llama a los mismos scripts en el mismo orden.
+# La lógica de cada etapa vive en 05-laboratorio-microservicios/devsecops-pipeline/stages/: este archivo solo las orquesta.
+# La versión Jenkins (devsecops-pipeline/orchestrators/jenkins/Jenkinsfile) llama a los mismos scripts en el mismo orden.
 #
 # Cuándo corre y a qué ambiente despliega:
 #   push a feature/**   → CI completo + CD al environment "test" (sin publicar: dry run)
 #   pull_request        → solo CI (valida el cambio antes de fusionar)
 #   workflow_dispatch   → CI + CD al environment "simulacion-produccion" (con aprobación; publicar opcional)
-name: pipeline-poc-credit-evaluation
+name: poc-credit-evaluation-cicd
 
 on:
   workflow_dispatch:
@@ -31,26 +31,26 @@ on:
   push:
     branches: ["feature/**"]
     paths:
-      - "05-laboratorio-microservicios/workspace/**"
-      - ".github/workflows/pipeline-poc-credit-evaluation.yml"
+      - "05-laboratorio-microservicios/devsecops-pipeline/**"
+      - ".github/workflows/poc-credit-evaluation-cicd.yml"
   pull_request:
     paths:
-      - "05-laboratorio-microservicios/workspace/**"
-      - ".github/workflows/pipeline-poc-credit-evaluation.yml"
+      - "05-laboratorio-microservicios/devsecops-pipeline/**"
+      - ".github/workflows/poc-credit-evaluation-cicd.yml"
 
 # Mínimo privilegio: el pipeline solo puede leer el repositorio
 permissions:
   contents: read
 
 concurrency:
-  group: pipeline-poc-credit-evaluation-${{ github.ref }}
+  group: poc-credit-evaluation-cicd-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   REPOSITORIO: ${{ inputs.repositorio || 'edzamo/poc-credit-evaluation' }}
   APP_DIR: ${{ github.workspace }}/app
   OUT_DIR: ${{ github.workspace }}/salida
-  SCRIPTS: ${{ github.workspace }}/ws-devops/05-laboratorio-microservicios/workspace/scripts
+  SCRIPTS: ${{ github.workspace }}/ws-devops/05-laboratorio-microservicios/devsecops-pipeline/stages
   COBERTURA_MINIMA: ${{ inputs.cobertura_minima || '30' }}
   MODO_ESTRICTO: ${{ inputs.modo_estricto || false }}
 
@@ -96,26 +96,26 @@ jobs:
           cache-dependency-path: app/**/pom.xml
 
       - name: "1. Secretos (Gitleaks)"
-        run: '"$SCRIPTS/01-secretos.sh"'
+        run: '"$SCRIPTS/01-secret-scan.sh"'
       - name: "2. Build + tests"
         run: '"$SCRIPTS/02-build-test.sh"'
       - name: "3. Cobertura mínima"
-        run: '"$SCRIPTS/03-cobertura.sh"'
+        run: '"$SCRIPTS/03-coverage-gate.sh"'
       - name: "4. Verificar artefactos"
-        run: '"$SCRIPTS/04-artefactos.sh"'
+        run: '"$SCRIPTS/04-artifacts.sh"'
       - name: "5. Calidad (SonarQube)"
-        run: '"$SCRIPTS/05-sonar.sh"'
+        run: '"$SCRIPTS/05-code-quality.sh"'
       - name: "6. SAST + SCA"
         run: '"$SCRIPTS/06-sast-sca.sh"'
       - name: "7. Imágenes Docker"
-        run: '"$SCRIPTS/07-imagenes.sh"'
+        run: '"$SCRIPTS/07-image-build.sh"'
       - name: "8. Escaneo de imágenes + SBOM"
-        run: '"$SCRIPTS/08-escaneo-imagenes.sh"'
+        run: '"$SCRIPTS/08-image-scan.sh"'
 
       # Las imágenes pasan al job de CD tal cual: se construyen UNA vez
       - name: Empaquetar imágenes para el CD
         run: |
-          source "$SCRIPTS/lib.sh"
+          source "$SCRIPTS/lib/common.sh"
           imagenes=(); for s in "${SERVICIOS[@]}"; do imagenes+=("$(imagen_de "$s")"); done
           docker save "${imagenes[@]}" | gzip > imagenes.tar.gz
       - uses: actions/upload-artifact@v7
@@ -166,7 +166,7 @@ jobs:
         run: gunzip -c imagenes.tar.gz | docker load
 
       - name: "9. Publicar en Docker Hub"
-        run: '"$SCRIPTS/09-publicar.sh"'
+        run: '"$SCRIPTS/09-image-publish.sh"'
       - name: "10. Deploy simulado + smoke test + DAST"
         run: '"$SCRIPTS/10-deploy-dast.sh"'
 

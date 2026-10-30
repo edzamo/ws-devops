@@ -5,7 +5,7 @@ Laboratorio de cierre de la etapa Docker. Toma un sistema real de 3 servicios, l
 | Parte | Qué | Estado |
 |---|---|---|
 | 1 | Contenerizar y publicar las 3 imágenes en Docker Hub | ✅ Hecho |
-| 2 | Pipeline CI/CD simulado (GitHub Actions y Jenkins): tests, cobertura, Sonar, SAST/SCA, imágenes, publicación, deploy y DAST | ✅ Escrito y validado en local ([workspace/](workspace/)) |
+| 2 | Pipeline CI/CD simulado (GitHub Actions y Jenkins): tests, cobertura, Sonar, SAST/SCA, imágenes, publicación, deploy y DAST | ✅ Escrito y validado en local ([devsecops-pipeline/](devsecops-pipeline/)) |
 
 ---
 
@@ -33,7 +33,7 @@ Flujo: Frontend → Orquestador → (Mock de riesgo + PostgreSQL).
 3. **Construir las imágenes** con `docker compose build`.
 4. **Levantar el stack** con `docker compose up -d` y probarlo en `:4200` y en Swagger (`:8080/swagger-ui`, `:8081/swagger-ui`).
 5. **Versionar desde el código**: la versión se cambió a `1.0.1` en `pom.xml`, `application.properties` y `package.json`, no solo en el tag.
-6. **Publicar** con un script manual que leía la versión del código, rechazaba `-SNAPSHOT` y tags ya existentes, y agregaba labels OCI (versión, commit, fecha). Hoy lo reemplazan las etapas 7 y 9 del [pipeline](workspace/); el script original queda en el historial de Git.
+6. **Publicar** con un script manual que leía la versión del código, rechazaba `-SNAPSHOT` y tags ya existentes, y agregaba labels OCI (versión, commit, fecha). Hoy lo reemplazan las etapas 7 y 9 del [pipeline](devsecops-pipeline/); el script original queda en el historial de Git.
 
 ### Resultado: imágenes publicadas
 
@@ -74,7 +74,7 @@ Las cubre la Parte 2 (pipeline) o la etapa de Kubernetes:
 
 ## Parte 2 — Pipeline simulado
 
-Ver [workspace/README.md](workspace/README.md) y [workspace/VARIABLES.md](workspace/VARIABLES.md): diseño, orden de las etapas, scripts, secretos, gobernanza, cómo ejecutarlo en GitHub Actions o Jenkins, y cómo llevarlo a AWS o Azure.
+Ver [devsecops-pipeline/README.md](devsecops-pipeline/README.md). Para entender cómo funciona por dentro, empezar por [docs/01-ARQUITECTURA.md](devsecops-pipeline/docs/01-ARQUITECTURA.md).
 
 ---
 
@@ -83,13 +83,13 @@ Ver [workspace/README.md](workspace/README.md) y [workspace/VARIABLES.md](worksp
 Ya no hace falta clonar el proyecto a mano: el pipeline descarga el código, compila, construye las imágenes y (con `PUBLICAR=true`) las publica.
 
 ```bash
-cd 05-laboratorio-microservicios/workspace
-./ejecutar-local.sh 0 4                                                    # descargar, compilar, testear, verificar jars
-./ejecutar-local.sh 7 7                                                    # construir las imágenes
-DOCKERHUB_USERNAME=edzamo13 DOCKERHUB_TOKEN=<token> PUBLICAR=true ./ejecutar-local.sh 9 9   # publicar
+cd 05-laboratorio-microservicios/devsecops-pipeline
+./run-local.sh 0 4                                                    # descargar, compilar, testear, verificar jars
+./run-local.sh 7 7                                                    # construir las imágenes
+DOCKERHUB_USERNAME=edzamo13 DOCKERHUB_TOKEN=<token> PUBLICAR=true ./run-local.sh 9 9   # publicar
 ```
 
-Detalle en [workspace/README.md](workspace/README.md) y [workspace/VARIABLES.md](workspace/VARIABLES.md).
+Detalle en [devsecops-pipeline/README.md](devsecops-pipeline/README.md) y [docs/03-CONFIGURACION.md](devsecops-pipeline/docs/03-CONFIGURACION.md).
 
 ---
 

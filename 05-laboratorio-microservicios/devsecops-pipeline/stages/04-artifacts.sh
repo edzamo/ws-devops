@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Etapa 4 — Verificar que se generaron los artefactos y guardarlos con su checksum.
 # En una empresa estos artefactos irían a un repositorio de artefactos (Nexus, Artifactory, AWS CodeArtifact).
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "4. Verificar artefactos"
 
 for svc in "${BACKENDS[@]}"; do

@@ -139,7 +139,7 @@ Cada tema tiene su propia guía detallada dentro de [01-documentation/](01-docum
 
 ## 🧪 Laboratorio final: microservicios con Docker
 
-En [05-laboratorio-microservicios/](05-laboratorio-microservicios/) vas a aprender **paso a paso** a deployar un proyecto real propio: [poc-credit-evaluation](https://github.com/edzamo/poc-credit-evaluation) (Angular + 2 microservicios Quarkus + PostgreSQL). El flujo: clonar, entender la arquitectura, compilar los artefactos, construir las imágenes, levantar el stack con Docker Compose, versionarlas y publicarlas en Docker Hub (con nota final sobre el siguiente paso: llevarlas a Minikube). Ver el detalle en el README de esa carpeta.
+En [05-laboratorio-microservicios/](../05-laboratorio-microservicios/) vas a aprender **paso a paso** a deployar un proyecto real propio: [poc-credit-evaluation](https://github.com/edzamo/poc-credit-evaluation) (Angular + 2 microservicios Quarkus + PostgreSQL). El flujo: clonar, entender la arquitectura, compilar los artefactos, construir las imágenes, levantar el stack con Docker Compose, versionarlas y publicarlas en Docker Hub (con nota final sobre el siguiente paso: llevarlas a Minikube). Ver el detalle en el README de esa carpeta.
 
 ---
 

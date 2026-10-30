@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Etapa 10 — Deploy simulado + DAST. Levanta el stack con las imágenes del pipeline, comprueba que
 # responde (smoke test) y lo ataca con OWASP ZAP (DAST: pruebas de seguridad con la app corriendo).
-source "$(dirname "$0")/lib.sh"
+source "$(dirname "$0")/lib/common.sh"
 etapa "10. Deploy simulado + smoke test + DAST (ZAP)"
 
 export TAG_RISK="$(imagen_de ms-risk-mock-credit-evaluation)"
 export TAG_ORCH="$(imagen_de ms-orchestrator-credit-evaluation)"
 export TAG_UX="$(imagen_de mms-ux-credit-evaluation)"
-COMPOSE=(docker compose -p credit-simulacion -f "$WORKSPACE_DIR/deploy/docker-compose.yml")
+COMPOSE=(docker compose -p credit-simulacion -f "$PIPELINE_DIR/environments/simulated/docker-compose.yml")
 trap '"${COMPOSE[@]}" logs --no-color > "$OUT_DIR/reportes/deploy-logs.txt" 2>&1; "${COMPOSE[@]}" down -v' EXIT
 
 "${COMPOSE[@]}" up -d --wait --wait-timeout 300 || fail "el stack no quedó healthy"
