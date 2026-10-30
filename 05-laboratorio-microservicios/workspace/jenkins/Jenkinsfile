@@ -1,0 +1,80 @@
+// Pipeline simulado CI/CD de poc-credit-evaluation (Laboratorio 05) — versión Jenkins.
+// La lógica de cada etapa vive en ../scripts/: este archivo solo las orquesta, igual que el workflow de GitHub Actions.
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        timeout(time: 60, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    parameters {
+        string(name: 'REPO_URL', defaultValue: 'https://github.com/edzamo/poc-credit-evaluation.git', description: 'Repositorio del código')
+        string(name: 'RAMA', defaultValue: 'main', description: 'Rama a construir')
+        string(name: 'COBERTURA_MINIMA', defaultValue: '30', description: 'Cobertura mínima de líneas (%)')
+        booleanParam(name: 'MODO_ESTRICTO', defaultValue: false, description: 'Los hallazgos de seguridad detienen el pipeline')
+        booleanParam(name: 'PUBLICAR', defaultValue: false, description: 'Publicar en Docker Hub (si no, dry run)')
+    }
+
+    environment {
+        APP_DIR          = "${WORKSPACE}/app"
+        OUT_DIR          = "${WORKSPACE}/salida"
+        SCRIPTS          = "${WORKSPACE}/05-laboratorio-microservicios/workspace/scripts"
+        // Las herramientas corren en contenedores del Docker del host: comparten el workspace con el volumen de Jenkins
+        DOCKER_MOUNT     = '--volumes-from jenkins'
+        SONAR_HOST_URL   = 'http://sonarqube:9000'
+        COBERTURA_MINIMA = "${params.COBERTURA_MINIMA}"
+        MODO_ESTRICTO    = "${params.MODO_ESTRICTO}"
+    }
+
+    stages {
+        stage('0. Checkout') {
+            steps {
+                // Repo privado: agregar credentialsId: 'github' (credencial creada en Jenkins)
+                dir('app') { git url: params.REPO_URL, branch: params.RAMA }
+                sh 'rm -rf "$OUT_DIR"'
+            }
+        }
+
+        // ─────────────────────────── CI ───────────────────────────
+        stage('1. Secretos (Gitleaks)')        { steps { sh '$SCRIPTS/01-secretos.sh' } }
+        stage('2. Build + tests')              { steps { sh '$SCRIPTS/02-build-test.sh' } }
+        stage('3. Cobertura mínima')           { steps { sh '$SCRIPTS/03-cobertura.sh' } }
+        stage('4. Verificar artefactos')       { steps { sh '$SCRIPTS/04-artefactos.sh' } }
+        stage('5. Calidad (SonarQube)')        { steps { sh '$SCRIPTS/05-sonar.sh' } }
+        stage('6. SAST + SCA')                 { steps { sh '$SCRIPTS/06-sast-sca.sh' } }
+        stage('7. Imágenes Docker')            { steps { sh '$SCRIPTS/07-imagenes.sh' } }
+        stage('8. Escaneo de imágenes + SBOM') { steps { sh '$SCRIPTS/08-escaneo-imagenes.sh' } }
+
+        // ─────────────────────────── CD ───────────────────────────
+        // Gobernanza: una persona aprueba antes de publicar y desplegar (segregación de funciones)
+        stage('Aprobación') {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    input id: 'aprobacion', message: '¿Aprobar publicación y despliegue a simulación-producción?', ok: 'Aprobar'
+                }
+            }
+        }
+        stage('9. Publicar en Docker Hub') {
+            environment { PUBLICAR = "${params.PUBLICAR}" }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub',
+                                                  usernameVariable: 'DOCKERHUB_USERNAME',
+                                                  passwordVariable: 'DOCKERHUB_TOKEN')]) {
+                    sh '$SCRIPTS/09-publicar.sh'
+                }
+            }
+        }
+        stage('10. Deploy simulado + DAST') { steps { sh '$SCRIPTS/10-deploy-dast.sh' } }
+    }
+
+    post {
+        always {
+            junit allowEmptyResults: true, testResults: 'app/**/target/surefire-reports/*.xml'
+            // Evidencia para auditoría: reportes y artefactos (jars) de cada ejecución
+            archiveArtifacts artifacts: 'salida/reportes/**, salida/artefactos/**', allowEmptyArchive: true
+        }
+    }
+}

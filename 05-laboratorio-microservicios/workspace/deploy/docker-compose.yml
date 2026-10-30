@@ -1,0 +1,47 @@
+# Ambiente simulado de despliegue que levanta la etapa 10. Usa las imágenes del pipeline (TAG_*), sin build.
+# Sin puertos publicados: las pruebas (smoke y ZAP) corren dentro de la red del stack.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: credit_evaluation_db
+      POSTGRES_USER: austro_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-solo-para-simulacion}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U austro_user -d credit_evaluation_db"]
+      interval: 5s
+      retries: 20
+
+  ms-risk-mock:
+    image: ${TAG_RISK:?}
+    environment:
+      QUARKUS_HTTP_PORT: 8081
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/q/health || exit 1"]
+      interval: 5s
+      retries: 30
+
+  ms-orchestrator:
+    image: ${TAG_ORCH:?}
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/credit_evaluation_db
+      DB_USERNAME: austro_user
+      DB_PASSWORD: ${DB_PASSWORD:-solo-para-simulacion}
+      RISK_SERVICE_URL: http://ms-risk-mock:8081
+    depends_on:
+      postgres: { condition: service_healthy }
+      ms-risk-mock: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/q/health || exit 1"]
+      interval: 5s
+      retries: 30
+
+  mms-ux:
+    image: ${TAG_UX:?}
+    depends_on:
+      ms-orchestrator: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || exit 1"]
+      interval: 5s
+      retries: 10

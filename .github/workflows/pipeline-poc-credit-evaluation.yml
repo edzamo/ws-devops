@@ -1,0 +1,178 @@
+# Pipeline simulado CI/CD de poc-credit-evaluation (Laboratorio 05).
+# La lógica de cada etapa vive en 05-laboratorio-microservicios/workspace/scripts/: este archivo solo las orquesta.
+# La versión Jenkins (workspace/jenkins/Jenkinsfile) llama a los mismos scripts en el mismo orden.
+#
+# Cuándo corre y a qué ambiente despliega:
+#   push a feature/**   → CI completo + CD al environment "test" (sin publicar: dry run)
+#   pull_request        → solo CI (valida el cambio antes de fusionar)
+#   workflow_dispatch   → CI + CD al environment "simulacion-produccion" (con aprobación; publicar opcional)
+name: pipeline-poc-credit-evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      repositorio:
+        description: "Repositorio del código (owner/nombre)"
+        default: edzamo/poc-credit-evaluation
+      rama:
+        description: "Rama, tag o commit a construir"
+        default: main
+      cobertura_minima:
+        description: "Cobertura mínima de líneas (%)"
+        default: "30"
+      modo_estricto:
+        description: "Los hallazgos de seguridad detienen el pipeline"
+        type: boolean
+        default: false
+      publicar:
+        description: "Publicar las imágenes en Docker Hub (si no, dry run)"
+        type: boolean
+        default: false
+  push:
+    branches: ["feature/**"]
+    paths:
+      - "05-laboratorio-microservicios/workspace/**"
+      - ".github/workflows/pipeline-poc-credit-evaluation.yml"
+  pull_request:
+    paths:
+      - "05-laboratorio-microservicios/workspace/**"
+      - ".github/workflows/pipeline-poc-credit-evaluation.yml"
+
+# Mínimo privilegio: el pipeline solo puede leer el repositorio
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-poc-credit-evaluation-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REPOSITORIO: ${{ inputs.repositorio || 'edzamo/poc-credit-evaluation' }}
+  APP_DIR: ${{ github.workspace }}/app
+  OUT_DIR: ${{ github.workspace }}/salida
+  SCRIPTS: ${{ github.workspace }}/ws-devops/05-laboratorio-microservicios/workspace/scripts
+  COBERTURA_MINIMA: ${{ inputs.cobertura_minima || '30' }}
+  MODO_ESTRICTO: ${{ inputs.modo_estricto || false }}
+
+jobs:
+  # ─────────────────────────── CI: ¿el código y las imágenes son aptos? ───────────────────────────
+  ci:
+    name: CI (build, tests, calidad, seguridad, imágenes)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      commit: ${{ steps.sha.outputs.commit }}
+    services:
+      # SonarQube efímero: vive solo mientras dura el job. En una empresa sería un servidor
+      # compartido y SONAR_HOST_URL / SONAR_TOKEN vendrían de secrets.
+      sonarqube:
+        image: sonarqube:26.10.0.133078-community
+        ports: ["9000:9000"]
+        env:
+          SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    steps:
+      - name: "0. Descargar el pipeline (ws-devops)"
+        uses: actions/checkout@v7
+        with:
+          path: ws-devops
+
+      - name: "0. Descargar el código (${{ env.REPOSITORIO }} @ ${{ inputs.rama || 'main' }})"
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.REPOSITORIO }}
+          ref: ${{ inputs.rama || 'main' }}
+          path: app
+          fetch-depth: 0   # historial completo: Gitleaks revisa todos los commits
+          # Repo público: basta el token del workflow. Repo privado: crear el secret REPO_TOKEN.
+          token: ${{ secrets.REPO_TOKEN || github.token }}
+      - run: echo "commit=$(git -C app rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        id: sha
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: app/**/pom.xml
+
+      - name: "1. Secretos (Gitleaks)"
+        run: '"$SCRIPTS/01-secretos.sh"'
+      - name: "2. Build + tests"
+        run: '"$SCRIPTS/02-build-test.sh"'
+      - name: "3. Cobertura mínima"
+        run: '"$SCRIPTS/03-cobertura.sh"'
+      - name: "4. Verificar artefactos"
+        run: '"$SCRIPTS/04-artefactos.sh"'
+      - name: "5. Calidad (SonarQube)"
+        run: '"$SCRIPTS/05-sonar.sh"'
+      - name: "6. SAST + SCA"
+        run: '"$SCRIPTS/06-sast-sca.sh"'
+      - name: "7. Imágenes Docker"
+        run: '"$SCRIPTS/07-imagenes.sh"'
+      - name: "8. Escaneo de imágenes + SBOM"
+        run: '"$SCRIPTS/08-escaneo-imagenes.sh"'
+
+      # Las imágenes pasan al job de CD tal cual: se construyen UNA vez
+      - name: Empaquetar imágenes para el CD
+        run: |
+          source "$SCRIPTS/lib.sh"
+          imagenes=(); for s in "${SERVICIOS[@]}"; do imagenes+=("$(imagen_de "$s")"); done
+          docker save "${imagenes[@]}" | gzip > imagenes.tar.gz
+      - uses: actions/upload-artifact@v7
+        with:
+          name: imagenes
+          path: imagenes.tar.gz
+          retention-days: 1
+
+      # Evidencia para auditoría: se sube aunque el pipeline falle
+      - name: Publicar reportes y artefactos (jars)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-reportes-y-artefactos
+          path: |
+            salida/reportes
+            salida/artefactos
+
+  # ─────────────── CD: publicar y desplegar (push a feature → test; ejecución manual → producción simulada) ───────────────
+  cd:
+    name: CD (publicar, deploy simulado, DAST)
+    needs: ci
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Gobernanza: si el environment tiene "required reviewers", el job espera una aprobación humana
+    environment: ${{ github.event_name == 'workflow_dispatch' && 'simulacion-produccion' || 'test' }}
+    env:
+      PUBLICAR: ${{ inputs.publicar || false }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: ws-devops
+      - name: Mismo commit que pasó el CI
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ env.REPOSITORIO }}
+          ref: ${{ needs.ci.outputs.commit }}
+          path: app
+          token: ${{ secrets.REPO_TOKEN || github.token }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: imagenes
+      - name: Cargar las imágenes construidas en el CI
+        run: gunzip -c imagenes.tar.gz | docker load
+
+      - name: "9. Publicar en Docker Hub"
+        run: '"$SCRIPTS/09-publicar.sh"'
+      - name: "10. Deploy simulado + smoke test + DAST"
+        run: '"$SCRIPTS/10-deploy-dast.sh"'
+
+      - name: Publicar reportes
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cd-reportes
+          path: salida/reportes

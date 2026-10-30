@@ -1,7 +1,10 @@
-# Proyecto externo clonado para el laboratorio (tiene su propio repo/remote)
-05-laboratorio-microservicios/poc-credit-evaluation/
+# Código de la app (repo propio: github.com/edzamo/poc-credit-evaluation). El pipeline lo descarga fuera de este repo; si alguien lo clona aquí, no se versiona
+**/poc-credit-evaluation/
 
 # Artefactos de build (por si se compila fuera del proyecto clonado)
 target/
 node_modules/
 dist/
+
+# Secretos locales (Jenkins del laboratorio)
+.env
