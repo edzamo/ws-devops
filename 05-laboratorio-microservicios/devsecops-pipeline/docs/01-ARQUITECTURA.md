@@ -76,7 +76,7 @@ FUERA de esta carpeta, a propósito:
   |---|---|---|
   | GitHub Actions | YAML | `run: "$SCRIPTS/02-build-test.sh"` |
   | Jenkins | Groovy (`Jenkinsfile`) | `sh '$SCRIPTS/02-build-test.sh'` |
-  | Azure DevOps | YAML | `- script: "$(SCRIPTS)/02-build-test.sh"` |
+  | Azure DevOps | YAML (plantilla central + `extends`) | `- script: "$(SCRIPTS)/02-build-test.sh"` |
   | AWS CodeBuild | YAML (`buildspec`) | `- '"$SCRIPTS/02-build-test.sh"'` |
 - Migrar de plataforma es escribir **un archivo de orquestación nuevo**: así se hicieron los ejemplos de [Azure DevOps](../orchestrators/azure-devops/) y [AWS](../orchestrators/aws-codepipeline/). Lo único que se ajustó en los scripts fue que la etapa 9 acepte un login al registro hecho por la nube (`REGISTRY_AUTH=plataforma`).
 - Cualquier etapa se puede ejecutar y depurar en una laptop ([`run-local.sh`](../run-local.sh)).
@@ -181,7 +181,14 @@ devsecops-pipeline-templates/                    ms-orchestrator-credit-evaluati
 | Control central | Un control nuevo se agrega una vez en la plantilla y aplica a todos |
 | Versionado | Los equipos adoptan la plantilla v3 cuando están listos, sin romper la v2 |
 
-`devsecops-pipeline/` ya cumple el papel de ese repositorio de plataforma. El paso siguiente sería publicarlo como plantilla reutilizable.
+`devsecops-pipeline/` ya cumple el papel de ese repositorio de plataforma. El ejemplo de [Azure DevOps](../orchestrators/azure-devops/) ya está armado así: un [pipeline corto](../orchestrators/azure-devops/caller/azure-pipelines.yml) para el repo de la aplicación que extiende una [plantilla central](../orchestrators/azure-devops/templates/java/quarkus/maven/devsecops.yml) fijada a un tag. Es el mismo patrón de pipelines reales de banca: el pipeline de la aplicación tiene unas 20 líneas y todo lo demás viene de la plantilla.
+
+Dos detalles que separan una implementación madura de una que no lo es:
+
+| Práctica madura | Antipatrón frecuente |
+|---|---|
+| La plantilla se fija a un **tag** (`v1.0.0`) y los equipos suben de versión cuando están listos | La plantilla se toma de `master`: un cambio rompe a todos los equipos a la vez |
+| El ambiente exige que el pipeline **extienda** la plantilla aprobada (*Required template* en Azure) | La plantilla se "incluye", y un equipo puede agregar o quitar etapas a su gusto |
 
 ---
 

@@ -12,6 +12,25 @@
 
 ---
 
+### Estrategia de ramas → ambiente (GitFlow)
+
+Práctica habitual en banca: la **rama** decide a qué ambiente se despliega, sin intervención manual.
+
+| Rama | Ambiente | Aprobación |
+|---|---|---|
+| `feature/*`, `bugfix/*` | `dev` | No |
+| `develop`, `release/*`, `hotfix/*` | `test` | Opcional |
+| `main` | Producción | **Sí** |
+| Pull request | Solo CI | — |
+
+El ejemplo de [Azure DevOps](../orchestrators/azure-devops/) aplica esta tabla completa, con un variable group por ambiente. El workflow de GitHub Actions usa una versión simplificada: `feature/*` → `test` y ejecución manual → `simulacion-produccion`.
+
+### Plantilla obligatoria
+
+En una organización con muchos equipos, el control más fuerte es que **el ambiente exija una plantilla**. En Azure DevOps es el check *Required template* del environment: si el pipeline no extiende la plantilla aprobada, no despliega. En GitHub el equivalente son los *rulesets* que exigen un *required workflow*. Así, ningún equipo puede saltarse un control de seguridad editando su YAML.
+
+---
+
 ## 2. Llevarlo a AWS o Azure
 
 Hay ejemplos completos en [`orchestrators/azure-devops/`](../orchestrators/azure-devops/) y [`orchestrators/aws-codepipeline/`](../orchestrators/aws-codepipeline/), cada uno con su guía de configuración.

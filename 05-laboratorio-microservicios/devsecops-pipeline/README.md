@@ -8,7 +8,7 @@ Un solo conjunto de scripts y cuatro orquestadores intercambiables:
 |---|---|---|
 | GitHub Actions | [`.github/workflows/poc-credit-evaluation-cicd.yml`](../../.github/workflows/poc-credit-evaluation-cicd.yml) | Listo para ejecutarse con un push a `feature/*` |
 | Jenkins | [`orchestrators/jenkins/Jenkinsfile`](orchestrators/jenkins/Jenkinsfile) | Listo, con Jenkins y SonarQube locales preconfigurados |
-| Azure DevOps | [`orchestrators/azure-devops/azure-pipelines.yml`](orchestrators/azure-devops/azure-pipelines.yml) | Ejemplo de referencia: registro en ACR, secretos en Key Vault |
+| Azure DevOps | [`orchestrators/azure-devops/`](orchestrators/azure-devops/) | Ejemplo de referencia con el modelo de banco: pipeline corto en la app que extiende una plantilla central (`extends`), GitFlow, ACR, Key Vault |
 | AWS | [`orchestrators/aws-codepipeline/`](orchestrators/aws-codepipeline/) | Ejemplo de referencia: CodePipeline + CodeBuild + ECR, infraestructura en CloudFormation |
 
 ## 📚 Documentación
@@ -32,7 +32,7 @@ devsecops-pipeline/
 ├── docs/                               Documentación (01 a 05)
 ├── orchestrators/                      CAPA DE ORQUESTACIÓN: el qué y el cuándo
 │   ├── github-actions/README.md        Dónde está y cómo se dispara el workflow
-│   ├── azure-devops/                   azure-pipelines.yml + guía de configuración
+│   ├── azure-devops/                   caller/ (pipeline corto de la app) + templates/ (plantilla central) + guía
 │   ├── aws-codepipeline/               pipeline.yml (CloudFormation) + buildspec-ci/cd.yml + guía
 │   └── jenkins/
 │       ├── Jenkinsfile                 Orquestador Jenkins

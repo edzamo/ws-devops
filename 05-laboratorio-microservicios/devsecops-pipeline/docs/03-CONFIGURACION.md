@@ -152,6 +152,7 @@ No pongas tokens en archivos versionados. Si los guardas en un archivo local, qu
 | Variable | Azure DevOps | AWS |
 |---|---|---|
 | Parámetros (`RAMA`, `COBERTURA_MINIMA`…) | `parameters:` del YAML → formulario *Run pipeline* | Parámetros del stack de CloudFormation y `env.variables` del buildspec |
+| Configuración por ambiente | Un **variable group** por ambiente (`docker-dev-credit-evaluation`…), elegido según la rama | Un stack de CloudFormation por ambiente, con sus parámetros |
 | Secretos | Pipelines → Library → **Variable group** enlazado a **Key Vault**, pasados en `env:` de cada paso | **Secrets Manager** / **Parameter Store**, en `env.secrets-manager` del buildspec |
 | Login al registro | Service connection a ACR (`REGISTRY_AUTH=plataforma`) | Rol IAM del build + `aws ecr get-login-password` (`REGISTRY_AUTH=plataforma`) |
 | `REGISTRY` | `<nombre>.azurecr.io` (variable `ACR_LOGIN_SERVER`) | `<cuenta>.dkr.ecr.<región>.amazonaws.com` (lo calcula la plantilla) |
