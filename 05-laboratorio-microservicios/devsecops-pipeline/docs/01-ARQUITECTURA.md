@@ -8,6 +8,7 @@ Documento para arquitectos de soluciones y arquitectos DevOps. Explica **cómo f
 | [02-ETAPAS.md](02-ETAPAS.md) | DevOps, desarrollo | Qué hace cada etapa, en qué orden, y los hallazgos |
 | [03-CONFIGURACION.md](03-CONFIGURACION.md) | DevOps, operaciones | Variables y secretos, y dónde se configuran en GitHub y Jenkins |
 | [04-GOBERNANZA-Y-NUBE.md](04-GOBERNANZA-Y-NUBE.md) | Arquitectos, seguridad, auditoría | Controles de gobernanza y cómo llevarlo a AWS o Azure |
+| [05-DEVSECOPS-APRENDIZAJE.md](05-DEVSECOPS-APRENDIZAJE.md) | Todos (estudio) | Cada control explicado, herramientas libres y de pago, ruta de junior a arquitecto |
 
 ---
 
@@ -209,7 +210,7 @@ devsecops-pipeline-templates/                    ms-orchestrator-credit-evaluati
 | **Quality gate** | Conjunto de umbrales de calidad que el código debe cumplir |
 | **SAST** | Análisis de seguridad del código fuente, sin ejecutarlo |
 | **SCA** | Análisis de vulnerabilidades conocidas (CVE) en librerías de terceros |
-| **DAST** | Pruebas de seguridad contra la aplicación en ejecución |
+| **DAST** | Pruebas de seguridad contra la aplicación en ejecución (detalle y OWASP ZAP en [05-DEVSECOPS-APRENDIZAJE.md](05-DEVSECOPS-APRENDIZAJE.md#28-dast--dynamic-application-security-testing--etapa-10)) |
 | **SBOM** | Inventario de componentes de una imagen ("lista de ingredientes") |
 | **CVE** | Identificador público de una vulnerabilidad conocida |
 | **Digest** | Huella `sha256:...` que identifica una imagen de forma exacta e inmutable |
