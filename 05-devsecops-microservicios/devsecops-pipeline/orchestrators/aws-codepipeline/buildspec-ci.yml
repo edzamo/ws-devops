@@ -1,0 +1,56 @@
+# CodeBuild — CI de poc-credit-evaluation (etapas 1 a 8). Mismos scripts que GitHub Actions, Jenkins y Azure.
+# Fuentes (las entrega CodePipeline):
+#   primaria  → ws-devops (el pipeline)          en $CODEBUILD_SRC_DIR
+#   AppSrc    → poc-credit-evaluation (el código) en $CODEBUILD_SRC_DIR_AppSrc (clon completo, con .git)
+version: 0.2
+
+env:
+  shell: bash                # arreglos y `source` necesitan bash (por defecto es sh)
+  variables:
+    COBERTURA_MINIMA: "30"
+    MODO_ESTRICTO: "false"
+    # REGISTRY y PREFIX llegan desde el proyecto de CodeBuild (plantilla CloudFormation)
+  # Con un SonarQube corporativo, el token vendría de Secrets Manager, nunca escrito aquí:
+  # secrets-manager:
+  #   SONAR_TOKEN: poc-credit-evaluation/sonar:token
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto21
+    commands:
+      - export APP_DIR="$CODEBUILD_SRC_DIR_AppSrc" OUT_DIR="$CODEBUILD_SRC_DIR/salida"
+      - export SCRIPTS="$CODEBUILD_SRC_DIR/05-devsecops-microservicios/devsecops-pipeline/stages"
+      # SonarQube efímero dentro del build (CodeBuild no tiene "service containers")
+      - docker run -d --name sonarqube -p 9000:9000 -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true sonarqube:26.10.0.133078-community
+  build:
+    commands:
+      - '"$SCRIPTS/01-secret-scan.sh"'
+      - '"$SCRIPTS/02-build-test.sh"'
+      - '"$SCRIPTS/03-coverage-gate.sh"'
+      - '"$SCRIPTS/04-artifacts.sh"'
+      - '"$SCRIPTS/05-code-quality.sh"'
+      - '"$SCRIPTS/06-sast-sca.sh"'
+      - '"$SCRIPTS/07-image-build.sh"'
+      - '"$SCRIPTS/08-image-scan.sh"'
+  post_build:
+    commands:
+      # Resultados de tests para la pestaña "Reports" de CodeBuild
+      - mkdir -p salida/tests && find "$APP_DIR" -path '*/surefire-reports/*.xml' -exec cp {} salida/tests/ \; || true
+      # Construir una vez: las imágenes viajan al CD como artefacto
+      - |
+        if [ "$CODEBUILD_BUILD_SUCCEEDING" = "1" ]; then
+          source "$SCRIPTS/lib/common.sh"
+          imagenes=(); for s in "${SERVICIOS[@]}"; do imagenes+=("$(imagen_de "$s")"); done
+          docker save "${imagenes[@]}" | gzip > imagenes.tar.gz
+        fi
+
+reports:
+  pruebas-unitarias:
+    file-format: JUNITXML
+    files: ["salida/tests/*.xml"]
+
+artifacts:
+  files:
+    - imagenes.tar.gz
+    - salida/**/*

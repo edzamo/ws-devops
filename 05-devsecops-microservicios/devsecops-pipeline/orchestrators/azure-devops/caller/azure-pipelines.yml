@@ -1,0 +1,47 @@
+# Pipeline de la aplicación poc-credit-evaluation (Azure Pipelines).
+# Este archivo vive en la RAÍZ DEL REPO DE LA APLICACIÓN y es intencionalmente corto: no define etapas.
+# Todo el CI/CD lo aporta la plantilla central de DevOps mediante `extends`.
+# El equipo de la aplicación solo decide: ramas, variable groups por ambiente y parámetros permitidos.
+
+name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)    # p. ej. feature-login-20261030.1
+
+trigger:                                              # estrategia GitFlow
+  branches:
+    include: [feature/*, bugfix/*, develop, release/*, hotfix/*, main]
+
+pr:
+  branches:
+    include: [develop, main]
+
+# Un variable group por ambiente: <plataforma>-<ambiente>-<dominio>.
+# Cada uno define REGISTRY y PUBLICAR, y enlaza sus secretos desde Azure Key Vault.
+variables:
+  - ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/bugfix/')) }}:
+      - group: docker-dev-credit-evaluation
+  - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix/')) }}:
+      - group: docker-test-credit-evaluation
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      - group: docker-prod-credit-evaluation
+
+resources:
+  repositories:
+    # Repositorio central de plantillas, FIJADO A UN TAG: un cambio en la plantilla no rompe a nadie
+    # sin aviso; cada equipo sube de versión cuando está listo (v1.0.0 → v1.1.0).
+    - repository: devsecops-templates
+      type: github
+      endpoint: github-edzamo
+      name: edzamo/ws-devops
+      ref: refs/tags/devsecops-templates-v1.0.0
+  containers:
+    - container: sonarqube                            # SonarQube efímero para el análisis de calidad
+      image: sonarqube:26.10.0.133078-community
+      ports: ["9000:9000"]
+      env:
+        SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+
+extends:
+  template: 05-devsecops-microservicios/devsecops-pipeline/orchestrators/azure-devops/templates/java/quarkus/maven/devsecops.yml@devsecops-templates
+  parameters:
+    coberturaMinima: "30"
+    modoEstricto: false
+    acrServiceConnection: acr-poc-credit

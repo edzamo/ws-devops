@@ -1,0 +1,242 @@
+# Infraestructura del pipeline CI/CD de poc-credit-evaluation en AWS, como código (CloudFormation).
+# Crea: repositorios ECR (tags inmutables), bucket de artefactos, roles IAM de mínimo privilegio,
+# proyectos CodeBuild de CI y CD, y el CodePipeline que los encadena con aprobación manual.
+#
+# Un pipeline por ambiente (práctica habitual en AWS):
+#   aws cloudformation deploy --stack-name poc-credit-evaluation-cicd-test \
+#     --template-file pipeline.yml --capabilities CAPABILITY_NAMED_IAM \
+#     --parameter-overrides ConnectionArn=<arn> Ambiente=test RamaPipeline=feature/pipeline-github-actions
+AWSTemplateFormatVersion: "2010-09-09"
+Description: poc-credit-evaluation-cicd — pipeline DevSecOps (CodePipeline + CodeBuild + ECR)
+
+Parameters:
+  ConnectionArn:
+    Type: String
+    Description: ARN de la conexión de AWS CodeConnections con GitHub (se aprueba una vez desde la consola)
+  Ambiente:
+    Type: String
+    AllowedValues: [test, simulacion-produccion]
+    Default: test
+  RamaPipeline:
+    Type: String
+    Default: main
+    Description: Rama de ws-devops de la que se lee el pipeline
+  RamaCodigo:
+    Type: String
+    Default: main
+    Description: Rama de poc-credit-evaluation que se construye
+  Publicar:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "false"
+  Prefijo:
+    Type: String
+    Default: austro
+
+Conditions:
+  EsProduccion: !Equals [!Ref Ambiente, simulacion-produccion]
+
+Resources:
+  # ─────────────── Registro de imágenes: un repositorio ECR por servicio ───────────────
+  EcrRiskMock:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${Prefijo}-ms-risk-mock-credit-evaluation
+      ImageTagMutability: IMMUTABLE          # un tag publicado no se puede sobrescribir
+      ImageScanningConfiguration: { ScanOnPush: true }
+  EcrOrchestrator:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${Prefijo}-ms-orchestrator-credit-evaluation
+      ImageTagMutability: IMMUTABLE
+      ImageScanningConfiguration: { ScanOnPush: true }
+  EcrFrontend:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${Prefijo}-mms-ux-credit-evaluation
+      ImageTagMutability: IMMUTABLE
+      ImageScanningConfiguration: { ScanOnPush: true }
+
+  # ─────────────── Bucket de artefactos (jars, reportes, imágenes entre etapas) ───────────────
+  ArtefactosBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: expirar-artefactos
+            Status: Enabled
+            ExpirationInDays: 90             # retención de evidencia; ajustar a la política del banco
+
+  # ─────────────── IAM: un rol por responsabilidad, con mínimo privilegio ───────────────
+  RolCodeBuild:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codebuild.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: codebuild-poc-credit-evaluation
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [logs:CreateLogGroup, logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:GetObjectVersion]
+                Resource: !Sub ${ArtefactosBucket.Arn}/*
+              - Effect: Allow
+                Action: [codebuild:CreateReportGroup, codebuild:CreateReport, codebuild:UpdateReport, codebuild:BatchPutTestCases]
+                Resource: !Sub arn:${AWS::Partition}:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/*
+              - Effect: Allow
+                Action: [codeconnections:UseConnection, codestar-connections:UseConnection]   # clon completo con historial (Gitleaks)
+                Resource: !Ref ConnectionArn
+              - Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: "*"
+              - Effect: Allow                            # publicar solo en los 3 repositorios del proyecto
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:BatchGetImage
+                  - ecr:DescribeImages
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                Resource: [!GetAtt EcrRiskMock.Arn, !GetAtt EcrOrchestrator.Arn, !GetAtt EcrFrontend.Arn]
+
+  RolPipeline:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codepipeline.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: codepipeline-poc-credit-evaluation
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:GetObjectVersion, s3:GetBucketVersioning]
+                Resource: [!GetAtt ArtefactosBucket.Arn, !Sub "${ArtefactosBucket.Arn}/*"]
+              - Effect: Allow
+                Action: [codeconnections:UseConnection, codestar-connections:UseConnection]
+                Resource: !Ref ConnectionArn
+              - Effect: Allow
+                Action: [codebuild:StartBuild, codebuild:BatchGetBuilds]
+                Resource: [!GetAtt BuildCI.Arn, !GetAtt BuildCD.Arn]
+
+  # ─────────────── CodeBuild: las máquinas que ejecutan los scripts ───────────────
+  BuildCI:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub poc-credit-evaluation-ci-${Ambiente}
+      ServiceRole: !GetAtt RolCodeBuild.Arn
+      TimeoutInMinutes: 45
+      Artifacts: { Type: CODEPIPELINE }
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: 05-devsecops-microservicios/devsecops-pipeline/orchestrators/aws-codepipeline/buildspec-ci.yml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_LARGE      # Maven + SonarQube + Trivy necesitan memoria
+        Image: aws/codebuild/standard:7.0
+        PrivilegedMode: true                   # necesario para construir imágenes Docker
+        EnvironmentVariables:
+          - { Name: REGISTRY, Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com" }
+          - { Name: PREFIX, Value: !Ref Prefijo }
+
+  BuildCD:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub poc-credit-evaluation-cd-${Ambiente}
+      ServiceRole: !GetAtt RolCodeBuild.Arn
+      TimeoutInMinutes: 30
+      Artifacts: { Type: CODEPIPELINE }
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: 05-devsecops-microservicios/devsecops-pipeline/orchestrators/aws-codepipeline/buildspec-cd.yml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_MEDIUM
+        Image: aws/codebuild/standard:7.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - { Name: REGISTRY, Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com" }
+          - { Name: PREFIX, Value: !Ref Prefijo }
+          - { Name: PUBLICAR, Value: !Ref Publicar }
+
+  # ─────────────── CodePipeline: el flujo ───────────────
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub poc-credit-evaluation-cicd-${Ambiente}
+      PipelineType: V2
+      RoleArn: !GetAtt RolPipeline.Arn
+      ArtifactStore: { Type: S3, Location: !Ref ArtefactosBucket }
+      Stages:
+        - Name: Fuentes
+          Actions:
+            - Name: Pipeline-ws-devops
+              ActionTypeId: { Category: Source, Owner: AWS, Provider: CodeStarSourceConnection, Version: "1" }
+              Configuration:
+                ConnectionArn: !Ref ConnectionArn
+                FullRepositoryId: edzamo/ws-devops
+                BranchName: !Ref RamaPipeline
+              OutputArtifacts: [{ Name: PipelineSrc }]
+            - Name: Codigo-poc-credit-evaluation
+              ActionTypeId: { Category: Source, Owner: AWS, Provider: CodeStarSourceConnection, Version: "1" }
+              Configuration:
+                ConnectionArn: !Ref ConnectionArn
+                FullRepositoryId: edzamo/poc-credit-evaluation
+                BranchName: !Ref RamaCodigo
+                OutputArtifactFormat: CODEBUILD_CLONE_REF   # clon git completo, no un zip
+              OutputArtifacts: [{ Name: AppSrc }]
+        - Name: CI
+          Actions:
+            - Name: Build-Tests-Calidad-Seguridad-Imagenes
+              ActionTypeId: { Category: Build, Owner: AWS, Provider: CodeBuild, Version: "1" }
+              Configuration:
+                ProjectName: !Ref BuildCI
+                PrimarySource: PipelineSrc
+              InputArtifacts: [{ Name: PipelineSrc }, { Name: AppSrc }]
+              OutputArtifacts: [{ Name: CiOutput }]
+        # Gobernanza: aprobación humana solo en producción
+        - !If
+          - EsProduccion
+          - Name: Aprobacion
+            Actions:
+              - Name: Aprobar-publicacion-y-despliegue
+                ActionTypeId: { Category: Approval, Owner: AWS, Provider: Manual, Version: "1" }
+                Configuration:
+                  CustomData: "¿Aprobar publicación en ECR y despliegue a simulacion-produccion? Revisar los reportes del CI."
+          - !Ref AWS::NoValue
+        - Name: CD
+          Actions:
+            - Name: Publicar-Desplegar-DAST
+              ActionTypeId: { Category: Build, Owner: AWS, Provider: CodeBuild, Version: "1" }
+              Configuration:
+                ProjectName: !Ref BuildCD
+                PrimarySource: PipelineSrc
+              InputArtifacts: [{ Name: PipelineSrc }, { Name: AppSrc }, { Name: CiOutput }]
+              OutputArtifacts: [{ Name: CdOutput }]
+
+Outputs:
+  Pipeline:
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/codesuite/codepipeline/pipelines/${Pipeline}/view
+  Registro:
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com

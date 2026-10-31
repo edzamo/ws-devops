@@ -1,0 +1,13 @@
+# Imagen de runtime para los microservicios Quarkus del pipeline.
+# A diferencia del Dockerfile.jvm del repo (que vuelve a compilar con Maven), esta imagen SOLO copia el
+# artefacto que el pipeline ya compiló y probó: "construir una vez". Contexto: target/quarkus-app
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /deployments
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+COPY --chown=appuser:appgroup lib/      ./lib/
+COPY --chown=appuser:appgroup *.jar     ./
+COPY --chown=appuser:appgroup app/      ./app/
+COPY --chown=appuser:appgroup quarkus/  ./quarkus/
+USER appuser
+EXPOSE 8080
+ENTRYPOINT ["java", "-Dquarkus.http.host=0.0.0.0", "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", "-jar", "/deployments/quarkus-run.jar"]

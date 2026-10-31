@@ -1,0 +1,7 @@
+# Imagen del frontend para el pipeline: copia el build de Angular que el pipeline ya generó (dist/)
+# y el nginx.conf del repo. Contexto: carpeta armada por la etapa 7 con browser/ y nginx.conf.
+# Hallazgo conocido (Semgrep): Nginx corre como root. Corregirlo exige nginx-unprivileged y cambiar el puerto.
+FROM nginx:1.27-alpine
+COPY browser/ /usr/share/nginx/html/
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80

@@ -1,0 +1,40 @@
+# Configuration as Code: Jenkins arranca ya configurado (usuario, credenciales y el job del pipeline)
+jenkins:
+  systemMessage: "Laboratorio 05 — pipeline simulado de poc-credit-evaluation"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          password: ${JENKINS_ADMIN_PASSWORD}
+  authorizationStrategy: loggedInUsersCanDoAnything
+
+# Las contraseñas llegan por variables de entorno (archivo .env), nunca escritas en el código
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: dockerhub
+              description: "Docker Hub (access token)"
+              username: ${DOCKERHUB_USERNAME:-sin-configurar}
+              password: ${DOCKERHUB_TOKEN:-sin-configurar}
+
+jobs:
+  - script: >
+      pipelineJob('poc-credit-evaluation-cicd') {
+        description('CI/CD simulado de poc-credit-evaluation. Jenkinsfile en ws-devops.')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('${WS_DEVOPS_REPO:-https://github.com/edzamo/ws-devops.git}') }
+                branch('${WS_DEVOPS_RAMA:-main}')
+              }
+            }
+            scriptPath('05-devsecops-microservicios/devsecops-pipeline/orchestrators/jenkins/Jenkinsfile')
+          }
+        }
+      }
