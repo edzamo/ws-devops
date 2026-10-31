@@ -132,14 +132,14 @@ Cada tema tiene su propia guía detallada dentro de [01-documentation/](01-docum
 ├── 03-docker-compose/      # Ejemplos de docker-compose (Postgres, Nginx, MySQL)
 └── README.md
 
-El laboratorio final está en la raíz del repo: ../05-laboratorio-microservicios/
+El laboratorio final está en la raíz del repo: ../05-devsecops-microservicios/
 ```
 
 ---
 
 ## 🧪 Laboratorio final: microservicios con Docker
 
-En [05-laboratorio-microservicios/](../05-laboratorio-microservicios/) vas a aprender **paso a paso** a deployar un proyecto real propio: [poc-credit-evaluation](https://github.com/edzamo/poc-credit-evaluation) (Angular + 2 microservicios Quarkus + PostgreSQL). Las imágenes quedaron publicadas en Docker Hub y todo el flujo está automatizado con un pipeline DevSecOps (tests, calidad, seguridad, publicación y despliegue simulado). El siguiente paso es llevarlas a Minikube. Ver el detalle en el README de esa carpeta.
+En [05-devsecops-microservicios/](../05-devsecops-microservicios/) vas a aprender **paso a paso** a deployar un proyecto real propio: [poc-credit-evaluation](https://github.com/edzamo/poc-credit-evaluation) (Angular + 2 microservicios Quarkus + PostgreSQL). Las imágenes quedaron publicadas en Docker Hub y todo el flujo está automatizado con un pipeline DevSecOps (tests, calidad, seguridad, publicación y despliegue simulado). El siguiente paso es llevarlas a Minikube. Ver el detalle en el README de esa carpeta.
 
 ---
 

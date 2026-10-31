@@ -150,7 +150,7 @@ Resources:
       Artifacts: { Type: CODEPIPELINE }
       Source:
         Type: CODEPIPELINE
-        BuildSpec: 05-laboratorio-microservicios/devsecops-pipeline/orchestrators/aws-codepipeline/buildspec-ci.yml
+        BuildSpec: 05-devsecops-microservicios/devsecops-pipeline/orchestrators/aws-codepipeline/buildspec-ci.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_LARGE      # Maven + SonarQube + Trivy necesitan memoria
@@ -169,7 +169,7 @@ Resources:
       Artifacts: { Type: CODEPIPELINE }
       Source:
         Type: CODEPIPELINE
-        BuildSpec: 05-laboratorio-microservicios/devsecops-pipeline/orchestrators/aws-codepipeline/buildspec-cd.yml
+        BuildSpec: 05-devsecops-microservicios/devsecops-pipeline/orchestrators/aws-codepipeline/buildspec-cd.yml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_MEDIUM

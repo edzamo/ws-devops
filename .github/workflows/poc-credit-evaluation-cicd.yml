@@ -1,5 +1,5 @@
 # Pipeline simulado CI/CD de poc-credit-evaluation (Laboratorio 05).
-# La lógica de cada etapa vive en 05-laboratorio-microservicios/devsecops-pipeline/stages/: este archivo solo las orquesta.
+# La lógica de cada etapa vive en 05-devsecops-microservicios/devsecops-pipeline/stages/: este archivo solo las orquesta.
 # La versión Jenkins (devsecops-pipeline/orchestrators/jenkins/Jenkinsfile) llama a los mismos scripts en el mismo orden.
 #
 # Cuándo corre y a qué ambiente despliega:
@@ -31,11 +31,11 @@ on:
   push:
     branches: ["feature/**"]
     paths:
-      - "05-laboratorio-microservicios/devsecops-pipeline/**"
+      - "05-devsecops-microservicios/devsecops-pipeline/**"
       - ".github/workflows/poc-credit-evaluation-cicd.yml"
   pull_request:
     paths:
-      - "05-laboratorio-microservicios/devsecops-pipeline/**"
+      - "05-devsecops-microservicios/devsecops-pipeline/**"
       - ".github/workflows/poc-credit-evaluation-cicd.yml"
 
 # Mínimo privilegio: el pipeline solo puede leer el repositorio
@@ -50,7 +50,7 @@ env:
   REPOSITORIO: ${{ inputs.repositorio || 'edzamo/poc-credit-evaluation' }}
   APP_DIR: ${{ github.workspace }}/app
   OUT_DIR: ${{ github.workspace }}/salida
-  SCRIPTS: ${{ github.workspace }}/ws-devops/05-laboratorio-microservicios/devsecops-pipeline/stages
+  SCRIPTS: ${{ github.workspace }}/ws-devops/05-devsecops-microservicios/devsecops-pipeline/stages
   COBERTURA_MINIMA: ${{ inputs.cobertura_minima || '30' }}
   MODO_ESTRICTO: ${{ inputs.modo_estricto || false }}
 

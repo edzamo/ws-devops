@@ -12,7 +12,7 @@ phases:
   install:
     commands:
       - export APP_DIR="$CODEBUILD_SRC_DIR_AppSrc" OUT_DIR="$CODEBUILD_SRC_DIR/salida"
-      - export SCRIPTS="$CODEBUILD_SRC_DIR/05-laboratorio-microservicios/devsecops-pipeline/stages"
+      - export SCRIPTS="$CODEBUILD_SRC_DIR/05-devsecops-microservicios/devsecops-pipeline/stages"
   pre_build:
     commands:
       - gunzip -c "$CODEBUILD_SRC_DIR_CiOutput/imagenes.tar.gz" | docker load

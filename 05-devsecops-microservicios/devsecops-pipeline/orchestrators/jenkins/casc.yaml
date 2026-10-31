@@ -34,7 +34,7 @@ jobs:
                 branch('${WS_DEVOPS_RAMA:-main}')
               }
             }
-            scriptPath('05-laboratorio-microservicios/devsecops-pipeline/orchestrators/jenkins/Jenkinsfile')
+            scriptPath('05-devsecops-microservicios/devsecops-pipeline/orchestrators/jenkins/Jenkinsfile')
           }
         }
       }

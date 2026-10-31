@@ -33,7 +33,7 @@ variables:
   - name: OUT_DIR
     value: $(Pipeline.Workspace)/salida
   - name: SCRIPTS
-    value: $(Pipeline.Workspace)/devsecops-templates/05-laboratorio-microservicios/devsecops-pipeline/stages
+    value: $(Pipeline.Workspace)/devsecops-templates/05-devsecops-microservicios/devsecops-pipeline/stages
   - name: COBERTURA_MINIMA
     value: ${{ parameters.coberturaMinima }}
   - name: MODO_ESTRICTO

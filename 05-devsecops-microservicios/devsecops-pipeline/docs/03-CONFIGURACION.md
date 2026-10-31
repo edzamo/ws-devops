@@ -97,7 +97,7 @@ GitHub crea el environment la primera vez que el workflow lo usa. Las reglas de 
 ### Variables del `docker-compose` → archivo `orchestrators/jenkins/.env`
 
 ```bash
-cd 05-laboratorio-microservicios/devsecops-pipeline/orchestrators/jenkins
+cd 05-devsecops-microservicios/devsecops-pipeline/orchestrators/jenkins
 cp .env.example .env        # .env está en .gitignore: nunca se sube
 ```
 
@@ -137,7 +137,7 @@ En el `Jenkinsfile` la credencial solo existe dentro de `withCredentials { }` (e
 Las variables se exportan o se anteponen al comando:
 
 ```bash
-cd 05-laboratorio-microservicios/devsecops-pipeline
+cd 05-devsecops-microservicios/devsecops-pipeline
 ./run-local.sh                                   # todo con los valores por defecto
 RAMA=feature/nueva COBERTURA_MINIMA=50 ./run-local.sh
 DOCKERHUB_USERNAME=edzamo13 DOCKERHUB_TOKEN=... PUBLICAR=true ./run-local.sh 9 9

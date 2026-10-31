@@ -77,7 +77,7 @@ El código de la aplicación **no** vive aquí: el pipeline lo descarga en cada 
 ## Jenkins (local con Docker)
 
 ```bash
-cd 05-laboratorio-microservicios/devsecops-pipeline/orchestrators/jenkins
+cd 05-devsecops-microservicios/devsecops-pipeline/orchestrators/jenkins
 cp .env.example .env                      # completar: contraseña admin, DOCKER_GID, token si se publica
 docker compose up -d --build              # Jenkins en http://localhost:8085, SonarQube en http://localhost:9000
 ```
@@ -89,7 +89,7 @@ Requisitos de la máquina: Docker con Compose v2 y ~6 GB de RAM libres (Jenkins 
 ## En la laptop
 
 ```bash
-cd 05-laboratorio-microservicios/devsecops-pipeline
+cd 05-devsecops-microservicios/devsecops-pipeline
 ./run-local.sh              # etapas 0 a 10: descarga main, compila en /tmp, deja reportes en /tmp/.../salida
 ./run-local.sh 2 4          # solo build, cobertura y artefactos (el código ya descargado)
 RAMA=feature/x ./run-local.sh

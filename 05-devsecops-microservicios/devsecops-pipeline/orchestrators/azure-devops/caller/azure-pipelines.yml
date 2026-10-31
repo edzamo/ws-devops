@@ -40,7 +40,7 @@ resources:
         SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
 
 extends:
-  template: 05-laboratorio-microservicios/devsecops-pipeline/orchestrators/azure-devops/templates/java/quarkus/maven/devsecops.yml@devsecops-templates
+  template: 05-devsecops-microservicios/devsecops-pipeline/orchestrators/azure-devops/templates/java/quarkus/maven/devsecops.yml@devsecops-templates
   parameters:
     coberturaMinima: "30"
     modoEstricto: false

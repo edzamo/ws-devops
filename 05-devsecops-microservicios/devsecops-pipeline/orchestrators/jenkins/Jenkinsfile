@@ -21,7 +21,7 @@ pipeline {
     environment {
         APP_DIR          = "${WORKSPACE}/app"
         OUT_DIR          = "${WORKSPACE}/salida"
-        SCRIPTS          = "${WORKSPACE}/05-laboratorio-microservicios/devsecops-pipeline/stages"
+        SCRIPTS          = "${WORKSPACE}/05-devsecops-microservicios/devsecops-pipeline/stages"
         // Las herramientas corren en contenedores del Docker del host: comparten el workspace con el volumen de Jenkins
         DOCKER_MOUNT     = '--volumes-from jenkins'
         SONAR_HOST_URL   = 'http://sonarqube:9000'

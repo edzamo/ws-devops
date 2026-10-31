@@ -1,6 +1,17 @@
-# 🧪 Laboratorio 05: Microservicios en Docker Hub y pipeline simulado
+# 🛡️ 05 · DevSecOps aplicado a microservicios
 
-Laboratorio de cierre de la etapa Docker. Toma un sistema real de 3 servicios, lo deja publicado como imágenes en **Docker Hub** y muestra con un **pipeline simulado** cómo sería su despliegue. Las imágenes publicadas son las que después se descargan en los pods de **Minikube** ([02-kubernetes](../02-kubernetes/)).
+Laboratorio de cierre de la etapa Docker **y** material de estudio de DevSecOps. Toma un sistema real de 3 servicios, lo publica como imágenes en **Docker Hub** y construye un **pipeline DevSecOps** completo para él, en cuatro plataformas. Las imágenes publicadas son las que después se descargan en los pods de **Minikube** ([02-kubernetes](../02-kubernetes/)).
+
+## 📚 Conceptos clave (por dónde empezar)
+
+| Si quieres entender… | Lee |
+|---|---|
+| Qué es un pipeline, sus capas, cómo viajan los secretos, Bash vs. Python, cómo se organiza en un banco | [01 · Arquitectura del pipeline](devsecops-pipeline/docs/01-ARQUITECTURA.md) |
+| Qué hace cada etapa, en qué orden y por qué (tests, cobertura, Sonar, imágenes, publicación) | [02 · Etapas](devsecops-pipeline/docs/02-ETAPAS.md) |
+| Dónde se configuran variables y secretos en GitHub, Jenkins, Azure y AWS | [03 · Configuración](devsecops-pipeline/docs/03-CONFIGURACION.md) |
+| Aprobaciones, ramas → ambientes, plantilla obligatoria, equivalencias en AWS y Azure | [04 · Gobernanza y nube](devsecops-pipeline/docs/04-GOBERNANZA-Y-NUBE.md) |
+| **SAST, DAST (OWASP ZAP), SCA, SBOM, secretos, IAST**: qué es cada uno, herramientas open source y de pago, ruta de junior a arquitecto | [05 · DevSecOps: conceptos y aprendizaje](devsecops-pipeline/docs/05-DEVSECOPS-APRENDIZAJE.md) |
+| Plantillas de pipeline (Azure `extends`, GitHub reusable workflows, Jenkins Shared Library, AWS), niveles de madurez | [06 · Plantillas de pipeline](devsecops-pipeline/docs/06-PLANTILLAS-DE-PIPELINE.md) |
 
 | Parte | Qué | Estado |
 |---|---|---|
@@ -83,7 +94,7 @@ Ver [devsecops-pipeline/README.md](devsecops-pipeline/README.md). Para entender 
 Ya no hace falta clonar el proyecto a mano: el pipeline descarga el código, compila, construye las imágenes y (con `PUBLICAR=true`) las publica.
 
 ```bash
-cd 05-laboratorio-microservicios/devsecops-pipeline
+cd 05-devsecops-microservicios/devsecops-pipeline
 ./run-local.sh 0 4                                                    # descargar, compilar, testear, verificar jars
 ./run-local.sh 7 7                                                    # construir las imágenes
 DOCKERHUB_USERNAME=edzamo13 DOCKERHUB_TOKEN=<token> PUBLICAR=true ./run-local.sh 9 9   # publicar
