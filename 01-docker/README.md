@@ -76,7 +76,7 @@ docker compose ps         # ver el estado de los servicios
 docker compose down       # detener y eliminar los servicios
 ```
 
-Detalle completo en [01-documentation/07.- docker_compose.md](<01-documentation/07.- docker_compose.md>) y ejemplo real en [04-docker-compose/docker-compose.yml](04-docker-compose/docker-compose.yml).
+Detalle completo en [01-documentation/07.- docker_compose.md](<01-documentation/07.- docker_compose.md>) y ejemplos reales en [03-docker-compose/](03-docker-compose/).
 
 ---
 
@@ -129,17 +129,17 @@ Cada tema tiene su propia guía detallada dentro de [01-documentation/](01-docum
 /
 ├── 01-documentation/       # Guías por tema (init, volúmenes, redes, env vars, compose, dockerhub...)
 ├── 02-dockerfiles/         # Ejemplos de Dockerfile
-├── 03-volumenes-redes/     # Ejercicios prácticos de volúmenes y redes
-├── 04-docker-compose/      # Ejemplo de docker-compose.yml
-├── 05-laboratorio-microservicios/  # Laboratorio final: Quarkus + Postgres + microservicios
+├── 03-docker-compose/      # Ejemplos de docker-compose (Postgres, Nginx, MySQL)
 └── README.md
+
+El laboratorio final está en la raíz del repo: ../05-laboratorio-microservicios/
 ```
 
 ---
 
 ## 🧪 Laboratorio final: microservicios con Docker
 
-En [05-laboratorio-microservicios/](../05-laboratorio-microservicios/) vas a aprender **paso a paso** a deployar un proyecto real propio: [poc-credit-evaluation](https://github.com/edzamo/poc-credit-evaluation) (Angular + 2 microservicios Quarkus + PostgreSQL). El flujo: clonar, entender la arquitectura, compilar los artefactos, construir las imágenes, levantar el stack con Docker Compose, versionarlas y publicarlas en Docker Hub (con nota final sobre el siguiente paso: llevarlas a Minikube). Ver el detalle en el README de esa carpeta.
+En [05-laboratorio-microservicios/](../05-laboratorio-microservicios/) vas a aprender **paso a paso** a deployar un proyecto real propio: [poc-credit-evaluation](https://github.com/edzamo/poc-credit-evaluation) (Angular + 2 microservicios Quarkus + PostgreSQL). Las imágenes quedaron publicadas en Docker Hub y todo el flujo está automatizado con un pipeline DevSecOps (tests, calidad, seguridad, publicación y despliegue simulado). El siguiente paso es llevarlas a Minikube. Ver el detalle en el README de esa carpeta.
 
 ---
 

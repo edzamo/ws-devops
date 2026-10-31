@@ -5,7 +5,8 @@ Laboratorio de cierre de la etapa Docker. Toma un sistema real de 3 servicios, l
 | Parte | Qué | Estado |
 |---|---|---|
 | 1 | Contenerizar y publicar las 3 imágenes en Docker Hub | ✅ Hecho |
-| 2 | Pipeline CI/CD simulado (GitHub Actions y Jenkins): tests, cobertura, Sonar, SAST/SCA, imágenes, publicación, deploy y DAST | ✅ Escrito y validado en local ([devsecops-pipeline/](devsecops-pipeline/)) |
+| 2 | Pipeline DevSecOps (GitHub Actions, Jenkins, Azure DevOps y AWS): tests, cobertura, Sonar, SAST/SCA, imágenes, publicación, deploy y DAST | ✅ Scripts validados en local · ⏳ primera ejecución en GitHub al subir la rama ([devsecops-pipeline/](devsecops-pipeline/)) |
+| 3 | Kubernetes con Minikube y simulación local de AWS | ⏭️ Siguiente (sección *Próximos pasos*, al final) |
 
 ---
 
@@ -62,10 +63,9 @@ Convención de nombres: Docker Hub gratuito solo permite `cuenta/repositorio`, a
 
 ### Brechas frente a una empresa regulada
 
-Las cubre la Parte 2 (pipeline) o la etapa de Kubernetes:
-
-- Sin escaneo de vulnerabilidades, SBOM ni firma de imágenes → Parte 2.
-- Publicación manual desde una laptop, no desde un pipeline → Parte 2.
+- ~~Sin escaneo de vulnerabilidades ni SBOM~~ → resuelto en la Parte 2 (etapas 6 y 8).
+- ~~Publicación manual desde una laptop~~ → resuelto en la Parte 2 (etapa 9).
+- Sin firma de imágenes → pendiente (Cosign; píldora R1 de [05-DEVSECOPS-APRENDIZAJE.md](devsecops-pipeline/docs/05-DEVSECOPS-APRENDIZAJE.md)).
 - `DB_PASSWORD` en texto plano en `docker-compose.yml` → `Secret` en Kubernetes.
 - Imágenes base flotantes (`node:20-alpine`, `nginx:1.27-alpine`) → fijarlas por digest.
 - El frontend trae `apiBaseUrl: http://localhost:8080` fijo al compilar → en Kubernetes necesitará un proxy o un Ingress.
@@ -93,11 +93,38 @@ Detalle en [devsecops-pipeline/README.md](devsecops-pipeline/README.md) y [docs/
 
 ---
 
-## ⏭️ Siguiente: Kubernetes con Minikube
+## ⏭️ Próximos pasos
 
-Con las imágenes en Docker Hub, Minikube las descarga por nombre y tag (o mejor, por digest):
+### 1. Kubernetes con Minikube (siguiente laboratorio)
+
+Para eso publicamos las imágenes en Docker Hub: Minikube las descarga por nombre y tag, o mejor, por **digest** (inmutable):
 
 ```bash
+minikube start
 kubectl create deployment ms-orchestrator \
   --image=edzamo13/austro-ms-orchestrator-credit-evaluation@sha256:799ed5833887a2c8093474b02741613dd57b6dab7e869483e2abe136d617c3da
 ```
+
+Qué hay que resolver en ese laboratorio:
+
+- [ ] Manifiestos por servicio: `Deployment`, `Service`, `ConfigMap` (`DB_URL`, `RISK_SERVICE_URL`) y `Secret` (`DB_PASSWORD`).
+- [ ] PostgreSQL con `StatefulSet` + `PersistentVolumeClaim`.
+- [ ] `readinessProbe` y `livenessProbe` sobre `/q/health` (reemplazan al `healthcheck` de Compose).
+- [ ] Exponer el frontend con `Ingress` y resolver `apiBaseUrl: http://localhost:8080`, que viene fijo al compilar Angular.
+- [ ] Agregar `devsecops-pipeline/environments/minikube/` y una variante de la etapa 10 que despliegue en el clúster en lugar de Compose.
+
+### 2. Simular AWS en local (al final)
+
+Para probar la versión AWS del pipeline (ECR, S3, Secrets Manager, CloudFormation) sin cuenta ni costo, usando un emulador de AWS en Docker:
+
+| Herramienta | Licencia | Nota |
+|---|---|---|
+| **Floci** | MIT (open source) | Alternativa a LocalStack, mismo puerto (4566), compatible con AWS CLI, Terraform y CDK. Es reciente: verificar en su repositorio oficial qué servicios soporta |
+| **LocalStack** | Comercial con plan gratuito | La referencia histórica. En marzo de 2026 cambió el empaquetado de su edición gratuita: revisar las condiciones vigentes |
+| **Moto** | Apache 2.0 | Librería de Python para simular AWS en tests unitarios |
+
+- [ ] Verificar qué servicios del pipeline cubre el emulador. CodeBuild y CodePipeline son los menos soportados: probablemente se simulen ECR, S3 y Secrets Manager, y la orquestación se ejecute con `run-local.sh`.
+- [ ] Desplegar `orchestrators/aws-codepipeline/pipeline.yml` contra el emulador (`--endpoint-url http://localhost:4566`).
+- [ ] Publicar las imágenes en el ECR emulado con `REGISTRY` y `REGISTRY_AUTH=plataforma`.
+
+> Un emulador sirve para un ciclo de prueba rápido, no garantiza paridad total con AWS. La validación final siempre es contra una cuenta real, con presupuesto y limpieza de recursos.
