@@ -1,82 +1,152 @@
-# ¿Qué es un Pod en Kubernetes?
+# 04 · Pods
 
-Un **Pod** es la unidad más pequeña y básica que se puede desplegar y gestionar en Kubernetes. Un Pod representa una instancia en ejecución de uno o varios contenedores que comparten almacenamiento, red y especificaciones sobre cómo ejecutar los contenedores.
+> **En una frase:** Un Pod es la unidad mínima que Kubernetes ejecuta: uno o varios contenedores que comparten **la misma IP, la misma red y los mismos volúmenes**.
+>
+> **Analogía (contar manzanas):** El contenedor es el **cajero**. El Pod es la **ventanilla**: tiene un número (IP), un escritorio (volúmenes) y normalmente un solo cajero. A veces hay un ayudante en la misma ventanilla (*sidecar*). Si la ventanilla se cierra, se cierra con todos los que están dentro.
 
-## Características principales de un Pod
+---
 
-- **Uno o varios contenedores:** Normalmente, un Pod contiene un solo contenedor, pero puede tener varios que necesiten compartir recursos.
-- **Red compartida:** Todos los contenedores de un Pod comparten la misma dirección IP, puerto y espacio de red.
-- **Almacenamiento compartido:** Los contenedores pueden acceder a volúmenes compartidos definidos en el Pod.
-- **Ciclo de vida conjunto:** Los contenedores de un Pod se crean, inician, detienen y eliminan juntos.
+## 1. ¿Por qué Kubernetes no ejecuta contenedores directamente?
 
-## ¿Para qué se usan los Pods?
+Porque a veces dos procesos **deben vivir juntos**: la aplicación y su agente de logs, o la aplicación y un *proxy* de seguridad. El Pod es la "cápsula" que garantiza que estén en el mismo nodo, se vean por `localhost` y compartan archivos.
 
-- Ejecutar aplicaciones o servicios en contenedores.
-- Agrupar contenedores que necesitan compartir recursos.
-- Gestionar el ciclo de vida de aplicaciones en Kubernetes.
+```text
+┌──────────────── Pod (IP 10.244.0.15) ────────────────┐
+│  ┌──────────────┐    localhost    ┌───────────────┐   │
+│  │ contenedor   │ ◄─────────────► │ sidecar       │   │
+│  │ app :8080    │                 │ logs / proxy  │   │
+│  └──────┬───────┘                 └──────┬────────┘   │
+│         └──────── volumen compartido ────┘            │
+└───────────────────────────────────────────────────────┘
+```
 
-## Ejemplo básico de un Pod
+**Regla de oro:** un Pod = una instancia de **un** componente. Backend y base de datos van en Pods distintos, porque escalan y fallan por separado.
+
+---
+
+## 2. Manifiesto comentado
 
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mi-primer-pod
+  name: web
+  labels:
+    app: web
 spec:
   containers:
     - name: nginx
-      image: nginx:latest
-
+      image: nginx:1.27          # versión fija; nunca "latest" en entornos reales
+      ports:
+        - containerPort: 80      # informativo: documenta el puerto que escucha
+      env:
+        - name: ENTORNO
+          value: "dev"
+  restartPolicy: Always          # Always (defecto) | OnFailure | Never
 ```
 
-## Comandos comunes para trabajar con Pods
+### Pod con varios contenedores (init + sidecar)
 
-A continuación, algunos comandos útiles de `kubectl` para gestionar y consultar Pods y otros recursos en Kubernetes:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-con-ayudantes
+spec:
+  initContainers:                # se ejecutan ANTES, en orden, y deben terminar bien
+    - name: preparar
+      image: busybox:1.36
+      command: ["sh", "-c", "echo '<h1>Hola</h1>' > /html/index.html"]
+      volumeMounts:
+        - name: html
+          mountPath: /html
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+    - name: lector-logs          # sidecar: corre junto a la app
+      image: busybox:1.36
+      command: ["sh", "-c", "while true; do date; sleep 30; done"]
+  volumes:
+    - name: html
+      emptyDir: {}
+```
 
-- **Ver todos los recursos del namespace actual:**
-  
-  ```sh
-  kubectl get all
-  ```
+- **initContainer:** "antes de abrir la ventanilla, ordena el escritorio" (migraciones, esperar a una dependencia, descargar configuración).
+- **sidecar:** "ayudante permanente" (logs, proxy de *service mesh*, renovación de certificados).
 
-- **Ver todos los Pods:**
-  
-  ```sh
-  kubectl get pods
-  ```
+---
 
-- **Ver todos los recursos con información extendida (IP, nodo, etc):**
-  
-  ```sh
-  kubectl get all -o wide
-  ```
+## 3. Ciclo de vida de un Pod
 
-- **Describir un Pod específico (muestra detalles, eventos y estado):**
-  
-  ```sh
-  kubectl describe pod <nombre-del-pod>
-  ```
+| Fase (`STATUS`) | Qué significa |
+| --- | --- |
+| `Pending` | Aceptado, pero aún sin nodo o descargando imagen |
+| `ContainerCreating` | Preparando volúmenes y red |
+| `Running` | Al menos un contenedor está corriendo |
+| `Succeeded` / `Completed` | Terminó bien (típico de Jobs) |
+| `Failed` | Terminó con error |
+| `CrashLoopBackOff` | Se cae y Kubernetes reintenta con espera creciente |
+| `ImagePullBackOff` / `ErrImagePull` | No puede descargar la imagen |
+| `OOMKilled` | Superó su límite de memoria (tema 15) |
 
-Reemplaza `<nombre-del-pod>` por el nombre real del Pod que deseas inspeccionar. Estos comandos te permiten monitorear, depurar y administrar los Pods y otros recursos en tu clúster de Kubernetes.
+---
 
-## Reinicio de un Pod y uso de Exec en un contenedor
+## 4. Práctica en Minikube
 
-- **Reiniciar un Pod:**  
-  Kubernetes no tiene un comando directo para reiniciar un Pod, pero puedes eliminarlo y el controlador (Deployment, ReplicaSet, etc.) lo recreará automáticamente.
+```sh
+kubectl apply -f pod.yaml
+kubectl get pods                       # lista
+kubectl get pods -o wide               # + IP y nodo
+kubectl get pod web -o yaml            # el objeto completo, incluido status
+kubectl describe pod web               # detalle + EVENTOS (lo primero que se mira ante un fallo)
+kubectl logs web                       # logs del contenedor
+kubectl logs web -c lector-logs -f     # logs de un contenedor específico, en vivo
+kubectl logs web --previous            # logs del contenedor ANTERIOR (antes del crash)
+kubectl port-forward pod/web 8080:80   # abrir http://localhost:8080
+kubectl delete pod web
+```
 
-  **Ejemplo:**
-  ```sh
-  kubectl delete pod <nombre-del-pod>
-  ```
-  Esto elimina el Pod y, si está gestionado por un Deployment, se creará uno nuevo con la misma configuración.
+---
 
-- **Exec en un contenedor:**  
-  El comando `kubectl exec` te permite ejecutar comandos dentro de un contenedor que está corriendo en un Pod, útil para depuración o administración.
+## 5. Errores comunes
 
-  **Ejemplo:**
-  ```sh
-  kubectl exec -it <nombre-del-pod> -- bash
-  ```
-  Esto abre una terminal interactiva dentro del contenedor principal del Pod.
+| Síntoma | Causa probable | Dónde mirar |
+| --- | --- | --- |
+| `Pending` eterno | No hay CPU/memoria suficiente o no hay nodo compatible | `kubectl describe pod` → Events |
+| `ImagePullBackOff` | Nombre/tag de imagen mal escrito o registro privado sin credenciales | Events; `imagePullSecrets` |
+| `CrashLoopBackOff` | La aplicación arranca y muere | `kubectl logs --previous` |
+| Borré el Pod y no volvió | Era un Pod "suelto", sin controlador | Usa un Deployment (tema 11) |
 
-Reemplaza `<nombre-del-pod>` por el nombre real del Pod que deseas inspeccionar.
+---
+
+## 6. Lo que debe saber el arquitecto
+
+- **Los Pods son desechables (ganado, no mascotas).** Su IP cambia cada vez que se recrean. Nadie debe apuntar a la IP de un Pod: para eso existe el Service (tema 10).
+- **Nunca se crean Pods sueltos en producción.** Siempre a través de un controlador: Deployment, StatefulSet, DaemonSet o Job.
+- **Imagen inmutable:** usa versiones fijas o, mejor, *digest* (`imagen@sha256:...`) para garantizar que se ejecuta exactamente lo que el pipeline escaneó.
+- **Seguridad del Pod** (en banca no es opcional): ejecutar como no-root, sistema de archivos de solo lectura, sin privilegios.
+
+```yaml
+# fragmento: securityContext recomendado para un contenedor
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+```
+
+---
+
+## 7. Checklist junior → senior
+
+- [ ] **Junior:** creo un Pod, veo sus logs y lo describo.
+- [ ] **Semi-senior:** diagnostico `Pending`, `CrashLoopBackOff` e `ImagePullBackOff` por los eventos; uso init y sidecar.
+- [ ] **Senior:** defino el estándar de Pod de la organización (securityContext, recursos, probes, imágenes por digest).
+
+---
+
+← [03 · Manifiesto vs. comandos](03-manifiesto-vs-comandos-y-declarativo.md) · [Índice](../README.md) · Siguiente → [05 · Metadata, labels y selectores](05-metadata-labels-selectores.md)

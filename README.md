@@ -5,7 +5,7 @@ Notas, laboratorios y ejemplos del camino de aprendizaje DevOps.
 | Carpeta | Tema | Estado |
 |---|---|---|
 | [01-docker](01-docker/) | Docker, Dockerfiles, volúmenes, redes, Docker Compose | En curso |
-| [02-kubernetes](02-kubernetes/) | Minikube, Pods, manifiestos, labels/selectors, ReplicationController, Helm | En curso |
+| [02-kubernetes](02-kubernetes/) | Minikube, Pods, Deployments, Services, almacenamiento, ConfigMaps/Secrets, probes, affinity, Ingress, EKS/AKS/GKE (26 temas + resumen para arquitectos) | En curso |
 | 03-terraform | Infraestructura como código | Pendiente |
 | [05-devsecops-microservicios](05-devsecops-microservicios/) | **DevSecOps**: pipeline CI/CD con seguridad integrada (GitHub Actions, Jenkins, Azure DevOps, AWS) sobre `poc-credit-evaluation` (Angular + 2 Quarkus), imágenes en Docker Hub | ✅ Cerrado · siguiente: Minikube y simulación local de AWS |
 
