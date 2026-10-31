@@ -1,0 +1,21 @@
+# Lab 01 · Completa los TODO. Usa como guía el tema 04 (Pods) de la documentación.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: TODO              # nombre del Pod
+  namespace: TODO         # namespace del laboratorio
+  labels:
+    TODO: TODO            # label "app"
+    TODO: TODO            # label "entorno"
+spec:
+  containers:
+    - name: TODO          # nombre del contenedor
+      image: TODO         # imagen con versión fija (nunca latest)
+      ports:
+        - containerPort: TODO
+      resources:
+        requests:
+          cpu: TODO
+          memory: TODO
+        limits:
+          memory: TODO
