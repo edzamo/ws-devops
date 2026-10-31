@@ -1,0 +1,27 @@
+name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  - feature/*
+  - release/*
+  - hotfix/*
+  - bugfix/*
+  - develop
+  - master
+
+variables:
+  - ${{ if or( startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/bugfix/')) }}:
+      - group: aks-dev-cashmanagement
+  - ${{ if or( eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/hotfix/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
+      - group: aks-test-cashmanagement
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+      - group: aks-prod-cashmanagement
+
+resources:
+  repositories:
+    - repository: self
+    - repository: common-pipeline-template-aks
+      type: git
+      name: BP-DevOps-Infrastructure/common-pipeline-template-aks
+      ref: refs/heads/master
+extends:
+  template: java/springboot/gradle/init_skaffold.yml@common-pipeline-template-aks
