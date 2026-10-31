@@ -6,11 +6,10 @@ La teoría está en [01-documentation](../01-documentation/). Aquí se **practic
 
 ## Cómo trabajamos (alumno y profesor)
 
-1. **Lee el `README.md` del laboratorio**: la historia, el objetivo y los temas de la documentación que necesitas.
-2. **Escribe tú los manifiestos.** Cada laboratorio trae plantillas con `TODO` para completar. No hay solución publicada: se aprende escribiendo.
-3. **Ejecuta los pasos** en Minikube y responde las **preguntas de comprensión** en el archivo `respuestas.md` del laboratorio.
-4. **Comprueba tu trabajo** con `./verificar.sh` (✅ / ❌ por cada criterio).
-5. **Revisión con el profesor:** avisa cuando termines; se revisan tus manifiestos y respuestas, se corrigen conceptos y recién entonces se abre el siguiente laboratorio.
+1. **Lee el `README.md` del laboratorio**: la historia, el objetivo, los pasos y los temas de la documentación que necesitas.
+2. **Escribe tú los manifiestos.** Cada laboratorio trae plantillas `.yaml` con `TODO` para completar. No hay solución publicada: se aprende escribiendo.
+3. **Ejecuta los pasos** en Minikube.
+4. **Revisión con el profesor:** avisa cuando termines; se revisan tus manifiestos, se conversan las preguntas del README y recién entonces se abre el siguiente laboratorio.
 
 > Regla de oro: si algo falla, **primero diagnostica** (`kubectl get`, `describe`, `logs`, eventos) antes de preguntar. Diagnosticar es la mitad del aprendizaje.
 
@@ -20,8 +19,8 @@ La teoría está en [01-documentation](../01-documentation/). Aquí se **practic
 
 | Lab | Nivel | Ejercicio | Qué practicas | Temas | Estado |
 | --- | --- | --- | --- | --- | --- |
-| [01](lab01-primer-pod/) | Junior | **Tu primer Pod** | Imperativo vs. declarativo, `describe`, `logs`, `exec`, `port-forward`, Pod efímero, diagnosticar `ImagePullBackOff` | 01-04, 06 | 🟡 En curso |
-| 02 | Junior | Labels y selectores | Etiquetar, filtrar, "robar" un Pod con labels | 05 | ⬜ |
+| [01](lab01-primer-pod/) | Junior | **Tu primer Pod** | Imperativo vs. declarativo, `describe`, `logs`, `exec`, `port-forward`, Pod efímero, diagnosticar `ImagePullBackOff` | 01-04, 06 | ✅ |
+| [02](lab02-labels-y-selectores/) | Junior | **Labels y selectores** | Etiquetar, filtrar, Service que elige por labels, el Pod intruso | 05, 10, 22 | 🟡 En curso |
 | 03 | Junior | De Docker a Kubernetes | Construir **tu** Dockerfile `hello world`, cargarlo en Minikube y correrlo como Pod | 01-docker, 04 | ⬜ |
 | 04 | Junior | ReplicaSet y autorreparación | Matar Pods y ver cómo vuelven; escalar | 07-08 | ⬜ |
 | 05 | Junior | Deployment: versiones sin corte | Rolling update de tu imagen v1 → v2 (`hello world 2.0`) y rollback | 11 | ⬜ |
@@ -49,10 +48,8 @@ Leyenda: ⬜ pendiente · 🟡 en curso · ✅ aprobado en revisión
 
 ```text
 labNN-nombre/
-├── README.md        ← enunciado: historia, objetivo, pasos, preguntas
-├── *.yaml           ← plantillas con TODO que completas tú
-├── respuestas.md    ← lo creas tú: respuestas a las preguntas
-└── verificar.sh     ← comprobación automática de los criterios de éxito
+├── README.md   ← enunciado: historia, objetivo, pasos y preguntas para conversar
+└── *.yaml      ← plantillas con TODO que completas tú
 ```
 
 Cada laboratorio usa su propio namespace (`lab01`, `lab02`...) para no mezclar ejercicios. Para empezar de cero: `kubectl delete namespace labNN`.

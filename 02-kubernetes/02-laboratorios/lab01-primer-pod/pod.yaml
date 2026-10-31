@@ -2,20 +2,20 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: TODO              # nombre del Pod
-  namespace: TODO         # namespace del laboratorio
+  name: web              # nombre del Pod
+  namespace: lab01         # namespace del laboratorio
   labels:
-    TODO: TODO            # label "app"
-    TODO: TODO            # label "entorno"
+    app: web            # label "app"
+    entorno: lab            # label "entorno"
 spec:
   containers:
-    - name: TODO          # nombre del contenedor
-      image: TODO         # imagen con versión fija (nunca latest)
+    - name: nginx          # nombre del contenedor
+      image: nginx:1.27         # imagen con versión fija (nunca latest)
       ports:
-        - containerPort: TODO
+        - containerPort: 80
       resources:
         requests:
-          cpu: TODO
-          memory: TODO
+          cpu: 50m
+          memory: 64Mi
         limits:
-          memory: TODO
+          memory: 128Mi

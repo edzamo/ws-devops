@@ -78,7 +78,7 @@ kubectl describe pod web -n lab01      # baja hasta "Events"
 kubectl logs web -n lab01
 ```
 
-Anota en `respuestas.md`: ¿en qué **nodo** está?, ¿qué **IP** tiene?, ¿qué **eventos** aparecen y en qué orden?
+Observa: ¿en qué **nodo** está?, ¿qué **IP** tiene?, ¿qué **eventos** aparecen y en qué orden?
 
 ---
 
@@ -124,7 +124,7 @@ kubectl apply -f pod.yaml              # lo recreas tú
 # vuelve a hacer port-forward y curl
 ```
 
-¿Sigue tu mensaje "Hola desde mi primer Pod"? Explica por qué en `respuestas.md`.
+¿Sigue tu mensaje "Hola desde mi primer Pod"? ¿Por qué?
 
 ---
 
@@ -143,18 +143,7 @@ kubectl describe pod web -n lab01      # ¿qué dicen los Events?
 
 ---
 
-## Paso 8 · Verificar
-
-```sh
-chmod +x verificar.sh
-./verificar.sh
-```
-
-Todo debe salir ✅. Si algo sale ❌, el mensaje te dice qué revisar.
-
----
-
-## Preguntas de comprensión (en `respuestas.md`)
+## Preguntas para conversar en clase
 
 1. Con tus palabras: ¿qué diferencia hay entre `kubectl run` y `kubectl apply -f`? ¿Cuál usarías en un banco y por qué?
 2. ¿Qué parte del YAML escribiste tú (`spec`) y qué parte llenó Kubernetes (`status`)? Da un ejemplo de cada una sacado de `kubectl get pod web -o yaml`.
@@ -165,12 +154,10 @@ Todo debe salir ✅. Si algo sale ❌, el mensaje te dice qué revisar.
 
 ---
 
-## Cuando termines
-
-Avisa al profesor con: "Lab 01 terminado". Se revisan `pod.yaml`, `respuestas.md` y la salida de `verificar.sh`. Después, limpieza:
+## Cierre
 
 ```sh
 kubectl delete namespace lab01
 ```
 
-Siguiente: **Lab 02 · Labels y selectores** (se abre tras la revisión).
+✅ **Lab 01 cerrado.** Siguiente: [Lab 02 · Labels y selectores](../lab02-labels-y-selectores/).
