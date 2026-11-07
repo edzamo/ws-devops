@@ -4,7 +4,7 @@ Resumen del curso: las **píldoras** de cada tema, la tabla de "problema → sol
 
 > **Analogía de todo el curso:** Kubernetes es un **banco con sucursales**. El clúster es el banco; los **nodos** son las sucursales; los **Pods** son las ventanillas; los **contenedores** son los cajeros; el **control plane** es la gerencia que vigila que todo esté como se ordenó.
 
-> **¿Buscas un comando?** Ve directo a la [consulta rápida](#0-consulta-rápida-quiero--comando--profundizar). **¿Buscas un tema?** Ve al [índice del temario](#3-índice-del-temario).
+> **¿Buscas un comando?** Ve directo a la [consulta rápida](#0-consulta-rápida-quiero--comando--profundizar). **¿Repasar lo aprendido en los labs?** Ve a [ideas clave](#ideas-clave-que-aclaramos-en-los-laboratorios). **¿Buscas un tema?** Ve al [índice del temario](#3-índice-del-temario).
 
 ---
 
@@ -24,7 +24,16 @@ Resumen del curso: las **píldoras** de cada tema, la tabla de "problema → sol
 | Aplicar un YAML (declarativo) | `kubectl apply -f <archivo\|carpeta>` · `kubectl diff -f <archivo>` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
 | Generar un YAML sin escribirlo | `kubectl create deployment web --image=nginx:1.27 --dry-run=client -o yaml` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
 | Ver la documentación de un campo | `kubectl explain deployment.spec.strategy` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
-| Ver Pods / filtrar por label | `kubectl get pods -o wide` · `kubectl get pods -l app=web --show-labels` | [04](01-documentation/04-pods.md), [05](01-documentation/05-metadata-labels-selectores.md) |
+| Ver Pods (con IP y nodo) | `kubectl get pods -n <ns> -o wide` | [04](01-documentation/04-pods.md) |
+| Ver los labels de los Pods | `kubectl get pods --show-labels` · como columnas: `-L app,entorno` | [05](01-documentation/05-metadata-labels-selectores.md) |
+| Filtrar por label | `-l app=credito` · varios (Y): `-l app=credito,entorno=dev` · distinto: `-l entorno!=dev` | [05](01-documentation/05-metadata-labels-selectores.md) |
+| Filtrar por conjunto | `-l 'entorno in (dev,qa)'` · `-l 'app notin (pagos)'` · solo que exista: `-l tier` | [05](01-documentation/05-metadata-labels-selectores.md) |
+| Agregar un label | `kubectl label pod <pod> version=v1` · a varios: `kubectl label pods -l entorno=dev version=v1` | [05](01-documentation/05-metadata-labels-selectores.md) |
+| Cambiar el valor de un label | `kubectl label pod <pod> version=v2 --overwrite` | [05](01-documentation/05-metadata-labels-selectores.md) |
+| Quitar un label | `kubectl label pod <pod> version-` (guion al final) | [05](01-documentation/05-metadata-labels-selectores.md) |
+| Agregar una annotation (nota, no filtrable) | `kubectl annotate pod <pod> ejemplo.com/owner="squad-creditos"` | [22](01-documentation/22-annotations.md) |
+| Ver a qué Pods envía tráfico un Service | `kubectl get endpointslices -l kubernetes.io/service-name=<svc> -o custom-columns=POD:.endpoints[*].targetRef.name` | [10](01-documentation/10-services.md) |
+| Borrar por label (simular primero) | `kubectl delete pods -l entorno=qa --dry-run=server` → sin `--dry-run` | [05](01-documentation/05-metadata-labels-selectores.md) |
 | **Diagnosticar un Pod** (en este orden) | `kubectl describe pod <pod>` → `kubectl logs <pod> [--previous]` → `kubectl get events --sort-by=.lastTimestamp` | [04](01-documentation/04-pods.md), [06](01-documentation/06-pods-reinicio-y-exec.md) |
 | Entrar a un contenedor | `kubectl exec -it <pod> -- sh` | [06](01-documentation/06-pods-reinicio-y-exec.md) |
 | Trabajar en un namespace | `kubectl create ns lab01` · `kubectl get pods -n lab01` · `-A` (todos) | [09](01-documentation/09-namespaces.md) |
@@ -34,6 +43,20 @@ Resumen del curso: las **píldoras** de cada tema, la tabla de "problema → sol
 | Ver consumo de CPU / memoria | `kubectl top pods` (requiere `metrics-server`) | [15](01-documentation/15-requests-y-limits.md) |
 | Cambiar algo en caliente (solo emergencias) | `kubectl edit …` · `kubectl patch …` | [25](01-documentation/25-edit-y-patch.md) |
 | Limpiar un laboratorio completo | `kubectl delete namespace labNN` | [Laboratorios](02-laboratorios/) |
+
+
+### Ideas clave que aclaramos en los laboratorios
+
+- **Un YAML puede tener N objetos.** Se separan con `---`. Un solo `kubectl apply -f archivo.yaml` crea todos. El nombre del archivo no le importa a Kubernetes.
+- **Nombre del archivo ≠ nombre del objeto.** `pods.yaml` es la carpeta de papeles; `metadata.name` es el nombre real dentro del clúster.
+- **Guardar no es aplicar.** Editar el YAML no cambia el clúster hasta que corres `kubectl apply`.
+- **El Pod es efímero: su IP cambia, sus labels no.** Por eso nadie se conecta a un Pod por IP ni por nombre.
+- **El Service es la central telefónica:** un **nombre fijo** hacia afuera (`http://credito`) y un **filtro de labels** hacia adentro (`selector`). Reparte el tráfico entre todos los Pods que cumplen el filtro.
+- **Un Service = copias idénticas.** Si dos Pods hacen cosas distintas (web vs. mobile, dev vs. qa), necesitan labels distintos y Services distintos.
+- **Lo que no está en un label no existe para el sistema.** Si el nombre dice `credito-qa` pero el label dice `entorno: dev`, Kubernetes lo trata como dev.
+- **Selector amplio = riesgo.** Cualquier Pod con los labels correctos recibe tráfico, incluso un intruso. Varios labels en el selector funcionan como **Y**.
+- **Label para seleccionar, annotation para describir.** ¿Voy a filtrar por este dato? → label. ¿Solo debe quedar escrito (responsable, ticket, config de herramienta)? → annotation.
+- **Labels en inglés y con estándar común** (`app.kubernetes.io/name`, `component`, `part-of`, `version`, más los de la empresa: `environment`, `team`, `cost-center`). Lo importante es que **todos usen la misma clave**.
 
 ---
 

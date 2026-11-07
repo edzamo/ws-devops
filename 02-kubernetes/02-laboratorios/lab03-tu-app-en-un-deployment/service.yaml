@@ -1,0 +1,13 @@
+# Lab 03 · Service "hola": la central telefónica delante de las réplicas. Completa los TODO (tema 10).
+apiVersion: v1
+kind: Service
+metadata:
+  name: TODO                 # el nombre que usarán los clientes: http://<este-nombre>
+  namespace: lab03
+spec:
+  type: ClusterIP            # solo accesible dentro del clúster (el valor por defecto)
+  selector:
+    TODO: TODO               # el mismo label que tienen los Pods del Deployment
+  ports:
+    - port: 80               # puerto del Service
+      targetPort: 80         # puerto del contenedor

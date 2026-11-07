@@ -154,4 +154,4 @@ Avisa con "Lab 02 terminado": revisamos `pods.yaml`, `service.yaml` y conversamo
 kubectl delete namespace lab02
 ```
 
-Siguiente: **Lab 03 · De Docker a Kubernetes** (tu propio Dockerfile corriendo como Pod).
+✅ **Lab 02 cerrado.** Siguiente: [Lab 03 · Tu app en un Deployment](../lab03-tu-app-en-un-deployment/).

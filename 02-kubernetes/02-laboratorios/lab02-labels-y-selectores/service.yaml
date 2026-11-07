@@ -6,7 +6,7 @@ metadata:
   namespace: lab02
 spec:
   selector:
-    TODO: TODO
+    app: credito
   ports:
     - port: 80
       targetPort: 80

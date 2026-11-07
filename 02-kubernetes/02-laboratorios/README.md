@@ -17,28 +17,20 @@ La teoría está en [01-documentation](../01-documentation/). Aquí se **practic
 
 ## Plan de laboratorios
 
-| Lab | Nivel | Ejercicio | Qué practicas | Temas | Estado |
-| --- | --- | --- | --- | --- | --- |
-| [01](lab01-primer-pod/) | Junior | **Tu primer Pod** | Imperativo vs. declarativo, `describe`, `logs`, `exec`, `port-forward`, Pod efímero, diagnosticar `ImagePullBackOff` | 01-04, 06 | ✅ |
-| [02](lab02-labels-y-selectores/) | Junior | **Labels y selectores** | Etiquetar, filtrar, Service que elige por labels, el Pod intruso | 05, 10, 22 | 🟡 En curso |
-| 03 | Junior | De Docker a Kubernetes | Construir **tu** Dockerfile `hello world`, cargarlo en Minikube y correrlo como Pod | 01-docker, 04 | ⬜ |
-| 04 | Junior | ReplicaSet y autorreparación | Matar Pods y ver cómo vuelven; escalar | 07-08 | ⬜ |
-| 05 | Junior | Deployment: versiones sin corte | Rolling update de tu imagen v1 → v2 (`hello world 2.0`) y rollback | 11 | ⬜ |
-| 06 | Junior | Services y DNS | ClusterIP, NodePort, balanceo entre réplicas, Service sin endpoints | 10 | ⬜ |
-| 07 | Junior | Namespaces y cuotas | Entornos `dev`/`qa`, ResourceQuota, LimitRange, DNS entre namespaces | 09 | ⬜ |
-| 08 | Semi-senior | Traducir un docker-compose | Tu compose **nginx + redis** → Deployments + Services | 10-11 | ⬜ |
-| 09 | Semi-senior | ConfigMap y Secret | Misma imagen en dev y prod con distinta configuración | 13-14 | ⬜ |
-| 10 | Semi-senior | Volúmenes | `emptyDir` compartido y PVC que sobrevive al Pod | 12 | ⬜ |
-| 11 | Semi-senior | Postgres con estado | Tu compose de **Postgres** → StatefulSet + Secret + PVC | 16 | ⬜ |
-| 12 | Semi-senior | Recursos y autoescalado | Provocar `OOMKilled`, generar carga y ver al HPA escalar | 15, 11 | ⬜ |
-| 13 | Semi-senior | Probes | Romper y arreglar liveness/readiness; ver el efecto en el Service | 19 | ⬜ |
-| 14 | Semi-senior | Jobs y CronJobs | Respaldo programado de Postgres con `pg_dump` | 20-21 | ⬜ |
-| 15 | Senior | Clúster multinodo | Anti-affinity, taints/tolerations, `drain` de un nodo sin corte | 17 | ⬜ |
-| 16 | Senior | DaemonSet | Agente en cada nodo; agregar un nodo y verlo aparecer | 18 | ⬜ |
-| 17 | Senior | Ingress | Dominios y rutas con TLS para dos servicios | 22-24 | ⬜ |
-| 18 | Senior | Cambios y drift | `edit`/`patch`, detectar drift con `diff`, Kustomize `dev`/`prod` | 25, 03 | ⬜ |
-| 19 | Proyecto | **poc-credit-evaluation en Minikube** | Angular + 2 Quarkus desde Docker Hub (por digest), ConfigMap, Secret, probes en `/q/health`, Ingress | Todos | ⬜ |
-| 20 | Proyecto | Simulacro de incidente | El profesor rompe el sistema; tú diagnosticas y explicas la causa raíz | Todos | ⬜ |
+Son **8 laboratorios**: pocos, pero densos. Cada uno junta varios temas en un escenario realista, y la última columna dice qué cambia cuando lo mismo corre en la nube.
+
+| Lab | Nivel | Ejercicio | Qué practicas | Temas | En la nube (EKS · AKS · GKE) | Estado |
+| --- | --- | --- | --- | --- | --- | --- |
+| [01](lab01-primer-pod/) | Junior | **Tu primer Pod** | Imperativo vs. declarativo, `describe`, `logs`, `exec`, `port-forward`, Pod efímero, diagnosticar `ImagePullBackOff` | 01-04, 06 | Igual; solo cambia el contexto de `kubectl` | ✅ |
+| [02](lab02-labels-y-selectores/) | Junior | **Labels y selectores** | Varios objetos en un YAML, filtrar, Service que elige por labels, el Pod intruso, label vs. annotation | 05, 10, 22 | Igual; los labels alimentan costos y políticas | ✅ |
+| [03](lab03-tu-app-en-un-deployment/) | Junior | **Tu app en un Deployment** | Tu imagen `hello world` cargada en Minikube → Deployment de 3 réplicas: matar Pods (autorreparación), escalar, Service + DNS, rolling update v1 → v2 y rollback | 01-docker, 07-08, 10-11 | La imagen viene de ECR / ACR / Artifact Registry | 🟡 En curso |
+| 04 | Semi-senior | **Una imagen, muchos entornos** | Namespaces `dev`/`qa`, ConfigMap y Secret por entorno, ResourceQuota, DNS entre namespaces | 09, 13-14 | Secretos desde Secrets Manager / Key Vault / Secret Manager | ⬜ |
+| 05 | Semi-senior | **Datos que sobreviven** | Tu compose de Postgres → StatefulSet + PVC + Secret; borrar el Pod y ver que los datos siguen; respaldo con CronJob | 12, 16, 20-21 | Disco EBS / Azure Disk / Persistent Disk; en banca, BD gestionada | ⬜ |
+| 06 | Semi-senior | **Listo para producción** | Requests/limits, provocar `OOMKilled`, probes (romper y arreglar), HPA escalando bajo carga | 11, 15, 19 | Autoescalado de nodos (Karpenter, Cluster Autoscaler, Autopilot) | ⬜ |
+| 07 | Senior | **La puerta de entrada** | Ingress: dominios y rutas hacia dos servicios, TLS | 23-24 | ALB / Application Gateway / GKE Gateway + WAF | ⬜ |
+| 08 | Proyecto | **poc-credit-evaluation en Minikube + simulacro** | Angular + 2 Quarkus desde Docker Hub (por digest), ConfigMap, Secret, probes en `/q/health`, Ingress. Al final el profesor rompe algo y tú diagnosticas la causa raíz | Todos | Qué cambiaría para llevarlo a EKS, AKS o GKE | ⬜ |
+
+**Para profundizar después (opcionales):** clúster multinodo con affinity/taints (17), DaemonSet (18), `edit`/`patch`, drift y Kustomize (25).
 
 Leyenda: ⬜ pendiente · 🟡 en curso · ✅ aprobado en revisión
 

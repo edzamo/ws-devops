@@ -1,0 +1,31 @@
+# Lab 03 · Deployment "hola". Completa los TODO. Apóyate en el tema 11 (Deployments).
+# Lee el YAML como dos capas: el Deployment (el gerente) y, dentro de "template", el molde de cada Pod.
+apiVersion: apps/v1          # ojo: los Deployments viven en "apps/v1", no en "v1"
+kind: Deployment
+metadata:
+  name: hola
+  namespace: TODO            # namespace del laboratorio
+  labels:
+    app: hola
+spec:
+  replicas: TODO             # ¿cuántas ventanillas idénticas quieres? (3)
+
+  # A QUIÉN gestiona el Deployment: los Pods con estos labels.
+  selector:
+    matchLabels:
+      app: TODO
+
+  # El MOLDE de cada Pod. Sus labels DEBEN cumplir el selector de arriba.
+  template:
+    metadata:
+      labels:
+        app: TODO
+    spec:
+      containers:
+        - name: web
+          image: TODO        # tu imagen v1, con tag fijo (hola-banco:1.0)
+          ports:
+            - containerPort: 80
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 64Mi }
