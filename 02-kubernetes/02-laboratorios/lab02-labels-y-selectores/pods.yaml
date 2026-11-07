@@ -1,0 +1,38 @@
+# Lab 02 · Cuatro Pods con labels. El primero está completo como ejemplo; completa los TODO de los otros tres.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: credito-dev
+  namespace: lab02
+  labels:
+    app: credito
+    entorno: dev
+    tier: backend
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      resources:
+        requests: { cpu: 10m, memory: 32Mi }
+        limits: { memory: 64Mi }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: credito-qa
+  namespace: lab02
+  labels:
+    app: TODO
+    entorno: TODO
+    tier: TODO
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      resources:
+        requests: { cpu: 10m, memory: 32Mi }
+        limits: { memory: 64Mi }
+---
+# TODO: Pod "pagos-dev" (app=pagos, entorno=dev, tier=backend). Copia la estructura de arriba.
+---
+# TODO: Pod "web-dev" (app=web, entorno=dev, tier=frontend).

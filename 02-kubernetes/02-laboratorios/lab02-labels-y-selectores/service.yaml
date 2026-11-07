@@ -1,0 +1,12 @@
+# Lab 02 · Service "credito". Paso 4: primero selecciona SOLO por app; luego corrígelo para que sea solo de dev.
+apiVersion: v1
+kind: Service
+metadata:
+  name: credito
+  namespace: lab02
+spec:
+  selector:
+    TODO: TODO
+  ports:
+    - port: 80
+      targetPort: 80
