@@ -4,6 +4,37 @@ Resumen del curso: las **píldoras** de cada tema, la tabla de "problema → sol
 
 > **Analogía de todo el curso:** Kubernetes es un **banco con sucursales**. El clúster es el banco; los **nodos** son las sucursales; los **Pods** son las ventanillas; los **contenedores** son los cajeros; el **control plane** es la gerencia que vigila que todo esté como se ordenó.
 
+> **¿Buscas un comando?** Ve directo a la [consulta rápida](#0-consulta-rápida-quiero--comando--profundizar). **¿Buscas un tema?** Ve al [índice del temario](#3-índice-del-temario).
+
+---
+
+## 0. Consulta rápida: quiero… → comando → profundizar
+
+| Quiero… | Comando | Profundizar |
+| --- | --- | --- |
+| **Levantar Minikube** | `minikube start` | [01 §4](01-documentation/01-minikube-presentacion-y-cluster-local.md#4-práctica-tu-primer-clúster-local) |
+| Ver si Minikube está corriendo | `minikube status` | [01](01-documentation/01-minikube-presentacion-y-cluster-local.md) |
+| Apagar / borrar Minikube | `minikube stop` · `minikube delete` (`--all` para todos) | [01](01-documentation/01-minikube-presentacion-y-cluster-local.md) |
+| Levantar con más CPU / RAM / otra versión | `minikube start --cpus=4 --memory=8192 --kubernetes-version=v1.33.0` | [02 §2](01-documentation/02-minikube-configuracion-y-perfiles.md#2-configurar-el-clúster-al-crearlo) |
+| Tener varios clústeres (perfiles) | `minikube start -p dev` · `minikube profile list` | [02 §3](01-documentation/02-minikube-configuracion-y-perfiles.md#3-multiclúster-con-perfiles) |
+| Activar Ingress, métricas o dashboard | `minikube addons enable ingress` · `metrics-server` · `minikube dashboard` | [02](01-documentation/02-minikube-configuracion-y-perfiles.md), [23](01-documentation/23-ingress-controller-nginx.md) |
+| Usar mi imagen local sin Docker Hub | `minikube image load app:1.0` | [01](01-documentation/01-minikube-presentacion-y-cluster-local.md) |
+| Abrir un Service en el navegador | `minikube service <svc>` · `kubectl port-forward pod/<pod> 8080:80` | [10](01-documentation/10-services.md) |
+| **Saber a qué clúster le hablo** (¡siempre primero!) | `kubectl config current-context` · `kubectl get nodes -o wide` | [02](01-documentation/02-minikube-configuracion-y-perfiles.md) |
+| Aplicar un YAML (declarativo) | `kubectl apply -f <archivo\|carpeta>` · `kubectl diff -f <archivo>` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
+| Generar un YAML sin escribirlo | `kubectl create deployment web --image=nginx:1.27 --dry-run=client -o yaml` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
+| Ver la documentación de un campo | `kubectl explain deployment.spec.strategy` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
+| Ver Pods / filtrar por label | `kubectl get pods -o wide` · `kubectl get pods -l app=web --show-labels` | [04](01-documentation/04-pods.md), [05](01-documentation/05-metadata-labels-selectores.md) |
+| **Diagnosticar un Pod** (en este orden) | `kubectl describe pod <pod>` → `kubectl logs <pod> [--previous]` → `kubectl get events --sort-by=.lastTimestamp` | [04](01-documentation/04-pods.md), [06](01-documentation/06-pods-reinicio-y-exec.md) |
+| Entrar a un contenedor | `kubectl exec -it <pod> -- sh` | [06](01-documentation/06-pods-reinicio-y-exec.md) |
+| Trabajar en un namespace | `kubectl create ns lab01` · `kubectl get pods -n lab01` · `-A` (todos) | [09](01-documentation/09-namespaces.md) |
+| Escalar réplicas | `kubectl scale deploy/<d> --replicas=3` | [11](01-documentation/11-deployments.md) |
+| Desplegar / revertir una versión | `kubectl rollout status deploy/<d>` · `kubectl rollout undo deploy/<d>` | [11](01-documentation/11-deployments.md) |
+| Reiniciar ordenadamente | `kubectl rollout restart deploy/<d>` | [06](01-documentation/06-pods-reinicio-y-exec.md), [11](01-documentation/11-deployments.md) |
+| Ver consumo de CPU / memoria | `kubectl top pods` (requiere `metrics-server`) | [15](01-documentation/15-requests-y-limits.md) |
+| Cambiar algo en caliente (solo emergencias) | `kubectl edit …` · `kubectl patch …` | [25](01-documentation/25-edit-y-patch.md) |
+| Limpiar un laboratorio completo | `kubectl delete namespace labNN` | [Laboratorios](02-laboratorios/) |
+
 ---
 
 ## 1. La idea madre (si solo recuerdas una cosa)
@@ -189,34 +220,7 @@ Todo lo demás (Deployments, StatefulSets, autoescalado, GitOps) es este mismo b
 
 ---
 
-## 7. Chuleta de comandos
-
-```sh
-# Contexto y clúster
-kubectl config current-context        kubectl get nodes -o wide
-minikube start -p <perfil>            minikube profile list
-
-# Ver y diagnosticar (en este orden ante un problema)
-kubectl get pods -o wide              kubectl describe pod <pod>      # Events
-kubectl logs <pod> [--previous]       kubectl get events --sort-by=.lastTimestamp
-kubectl exec -it <pod> -- sh          kubectl top pods
-
-# Aplicar y cambiar (declarativo)
-kubectl apply -f <archivo|carpeta>    kubectl diff -f <archivo>
-kubectl apply -f x.yaml --dry-run=server
-
-# Despliegues
-kubectl rollout status deploy/<d>     kubectl rollout undo deploy/<d>
-kubectl rollout restart deploy/<d>    kubectl scale deploy/<d> --replicas=N
-
-# Generar YAML sin escribirlo
-kubectl create deployment web --image=nginx:1.27 --dry-run=client -o yaml
-kubectl explain deployment.spec.strategy
-```
-
----
-
-## 8. Relación con las nubes (resumen; detalle en el [tema 26](01-documentation/26-kubernetes-en-la-nube-eks-aks-gke.md))
+## 7. Relación con las nubes (resumen; detalle en el [tema 26](01-documentation/26-kubernetes-en-la-nube-eks-aks-gke.md))
 
 | Concepto del curso | AWS · EKS | Azure · AKS | Google Cloud · GKE |
 | --- | --- | --- | --- |
@@ -234,7 +238,7 @@ kubectl explain deployment.spec.strategy
 
 ---
 
-## 9. Anti-patrones que un arquitecto debe frenar
+## 8. Anti-patrones que un arquitecto debe frenar
 
 | Anti-patrón | Por qué es malo | Alternativa |
 | --- | --- | --- |
@@ -249,7 +253,7 @@ kubectl explain deployment.spec.strategy
 
 ---
 
-## 10. Estructura de la carpeta
+## 9. Estructura de la carpeta
 
 ```text
 02-kubernetes/

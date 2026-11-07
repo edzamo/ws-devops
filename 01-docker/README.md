@@ -3,6 +3,8 @@
 Bienvenido/a al **Curso de Docker**.
 Este repositorio contiene todo el material necesario para aprender Docker desde cero hasta un nivel intermedio: contenedores, imágenes, Dockerfiles, volúmenes, redes, Docker Compose y un laboratorio final con microservicios.
 
+> **¿Buscas un comando?** Ve directo a [Comandos básicos](#️-comandos-básicos-de-docker). **¿Buscas un tema?** Ve a [Profundizar por tema](#-profundizar-por-tema).
+
 Ideal para desarrolladores, DevOps y cualquier persona interesada en contenerización y despliegue de aplicaciones modernas.
 
 ---
@@ -82,25 +84,28 @@ Detalle completo en [01-documentation/07.- docker_compose.md](<01-documentation/
 
 ## 🛠️ Comandos básicos de Docker
 
-| Categoría | Comando | Descripción |
-|---|---|---|
-| Info | `docker --version` | Ver versión instalada |
-| Info | `docker info` | Ver información del sistema Docker |
-| Imágenes | `docker pull nginx` | Descargar una imagen desde Docker Hub |
-| Imágenes | `docker images` | Listar imágenes descargadas |
-| Imágenes | `docker rmi nginx` | Eliminar una imagen |
-| Contenedores | `docker run -it ubuntu bash` | Crear y entrar a un contenedor interactivo |
-| Contenedores | `docker ps` / `docker ps -a` | Ver contenedores en ejecución / todos |
-| Contenedores | `docker stop <id>` | Detener un contenedor |
-| Contenedores | `docker rm <id>` | Eliminar un contenedor |
-| Dockerfile | `docker build -t miimagen .` | Crear una imagen desde un Dockerfile |
-| Compose | `docker compose up -d` | Levantar los servicios definidos en `docker-compose.yml` |
-| Compose | `docker compose down` | Detener y eliminar los servicios |
-| Volúmenes | `docker volume create mi_volumen` | Crear un volumen |
-| Volúmenes | `docker volume ls` | Listar volúmenes |
-| Docker Hub | `docker login` | Iniciar sesión en Docker Hub |
-| Docker Hub | `docker tag miapp usuario/miapp:latest` | Etiquetar una imagen para subirla |
-| Docker Hub | `docker push usuario/miapp:latest` | Subir la imagen a Docker Hub |
+| Categoría | Comando | Descripción | Profundizar |
+|---|---|---|---|
+| Info | `docker --version` | Ver versión instalada | [01](<01-documentation/01.-init.md>) |
+| Info | `docker info` | Ver información del sistema Docker | [01](<01-documentation/01.-init.md>) |
+| Imágenes | `docker pull nginx` | Descargar una imagen desde Docker Hub | [01](<01-documentation/01.-init.md>) |
+| Imágenes | `docker images` | Listar imágenes descargadas | [01](<01-documentation/01.-init.md>) |
+| Imágenes | `docker rmi nginx` | Eliminar una imagen | [01](<01-documentation/01.-init.md>) |
+| Contenedores | `docker run -it ubuntu bash` | Crear y entrar a un contenedor interactivo | [02](<01-documentation/02.-manager.md>) |
+| Contenedores | `docker ps` / `docker ps -a` | Ver contenedores en ejecución / todos | [02](<01-documentation/02.-manager.md>) |
+| Contenedores | `docker logs <id>` · `docker exec -it <id> sh` | Ver logs / entrar a un contenedor que ya corre | [z](<01-documentation/z.-comando-linux.md>) |
+| Contenedores | `docker stop <id>` | Detener un contenedor | [02](<01-documentation/02.-manager.md>) |
+| Contenedores | `docker rm <id>` | Eliminar un contenedor | [02](<01-documentation/02.-manager.md>) |
+| Dockerfile | `docker build -t miimagen .` | Crear una imagen desde un Dockerfile | [01](<01-documentation/01.-init.md>) |
+| Volúmenes | `docker volume create mi_volumen` | Crear un volumen | [03](<01-documentation/03.-manager-volumen.md>) |
+| Volúmenes | `docker volume ls` | Listar volúmenes | [03](<01-documentation/03.-manager-volumen.md>) |
+| Redes | `docker network create mi_red` · `docker network ls` | Crear / listar redes | [04](<01-documentation/04.-manager-network.md>) |
+| Docker Hub | `docker login` | Iniciar sesión en Docker Hub | [05](<01-documentation/05.-manager-dockerhub.md>) |
+| Docker Hub | `docker tag miapp usuario/miapp:latest` | Etiquetar una imagen para subirla | [05](<01-documentation/05.-manager-dockerhub.md>) |
+| Docker Hub | `docker push usuario/miapp:latest` | Subir la imagen a Docker Hub | [05](<01-documentation/05.-manager-dockerhub.md>) |
+| Variables | `docker run -e VAR=valor` · `--env-file .env` | Pasar variables de entorno | [06](<01-documentation/06.-manager-env-variables.md>) |
+| Compose | `docker compose up -d` | Levantar los servicios definidos en `docker-compose.yml` | [07](<01-documentation/07.- docker_compose.md>) |
+| Compose | `docker compose down` | Detener y eliminar los servicios | [07](<01-documentation/07.- docker_compose.md>) |
 
 > Lista completa y explicada de comandos Linux/Docker en [01-documentation/z.-comando-linux.md](01-documentation/z.-comando-linux.md).
 
