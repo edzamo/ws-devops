@@ -22,6 +22,7 @@ Resumen del curso: las **píldoras** de cada tema, la tabla de "problema → sol
 | Abrir un Service en el navegador | `minikube service <svc>` · `kubectl port-forward pod/<pod> 8080:80` | [10](01-documentation/10-services.md) |
 | **Saber a qué clúster le hablo** (¡siempre primero!) | `kubectl config current-context` · `kubectl get nodes -o wide` | [02](01-documentation/02-minikube-configuracion-y-perfiles.md) |
 | Aplicar un YAML (declarativo) | `kubectl apply -f <archivo\|carpeta>` · `kubectl diff -f <archivo>` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
+| Validar un YAML contra el clúster **sin crear nada** | `kubectl apply -f <archivo> --dry-run=server` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
 | Generar un YAML sin escribirlo | `kubectl create deployment web --image=nginx:1.27 --dry-run=client -o yaml` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
 | Ver la documentación de un campo | `kubectl explain deployment.spec.strategy` | [03](01-documentation/03-manifiesto-vs-comandos-y-declarativo.md) |
 | Ver Pods (con IP y nodo) | `kubectl get pods -n <ns> -o wide` | [04](01-documentation/04-pods.md) |
@@ -57,6 +58,32 @@ Resumen del curso: las **píldoras** de cada tema, la tabla de "problema → sol
 - **Selector amplio = riesgo.** Cualquier Pod con los labels correctos recibe tráfico, incluso un intruso. Varios labels en el selector funcionan como **Y**.
 - **Label para seleccionar, annotation para describir.** ¿Voy a filtrar por este dato? → label. ¿Solo debe quedar escrito (responsable, ticket, config de herramienta)? → annotation.
 - **Labels en inglés y con estándar común** (`app.kubernetes.io/name`, `component`, `part-of`, `version`, más los de la empresa: `environment`, `team`, `cost-center`). Lo importante es que **todos usen la misma clave**.
+
+#### Píldora · Deployment + Service: quién hace qué (lab 03)
+
+```text
+           cliente ──► Service "hola"  (namespace lab03)    selector: app=hola
+                          │  nombre fijo + balanceo
+              ┌───────────┼───────────┐
+            Pod         Pod         Pod       ← 3 copias idénticas, label app=hola
+              └───────────┴───────────┘          (su IP cambia cada vez que renacen)
+                Deployment "hola" mantiene 3     selector: app=hola
+```
+
+| | **Deployment** (el gerente) | **Service** (la central telefónica) |
+| --- | --- | --- |
+| Su trabajo | Que **siempre** existan N copias idénticas del Pod, en la versión pedida | Dar **un nombre y una IP fijos** y **repartir** las llamadas entre las copias |
+| Cómo encuentra a sus Pods | `selector` → label `app: hola` | `selector` → label `app: hola` |
+| Si un Pod muere | Crea otro (nombre e IP nuevos, **mismos labels**) | No se entera de nada: el Pod nuevo tiene el label y entra solo al reparto |
+| Analogía | Cuida que haya 3 ventanillas abiertas | Atiende el número del banco y pasa la llamada a una ventanilla libre |
+
+- **El Service no orquesta el Deployment.** Ni siquiera sabe que existe: solo busca **Pods con el label**, vengan de donde vengan. El que orquesta (crea, reemplaza, escala, actualiza) es el Deployment.
+- **El enlace es el label, no el nombre del Deployment.** Que los dos se llamen `hola` es una convención para entenderlos. Lo que los conecta es `app: hola` en los selectores y en el `template` del Deployment.
+- **La ventaja:** los clientes nunca usan IPs de Pods, que cambian cada vez que un Pod renace. Llaman a `http://hola` (o `hola.lab03` desde otro namespace) y el Service siempre sabe a qué Pods vivos mandar el tráfico.
+- **Namespace ≠ nombre.** `lab03` es el piso del edificio, donde vive todo; `hola` es el nombre de la app.
+- **Puertos:** `port` es por donde entra el cliente al Service; `targetPort` es donde escucha el contenedor. Pueden ser distintos.
+- **Un label es un par `clave: valor` y deben coincidir los dos.** `TODO: hola` no es `app: hola`: el YAML es válido y el `apply` no se queja, pero el Service queda **sin endpoints**. Es un fallo silencioso; se descubre con `kubectl get endpointslices`.
+- **`replicas` es un número.** Un `TODO` sin reemplazar ahí da `cannot unmarshal string into ... int32`. Valida siempre antes con `kubectl apply -f x.yaml --dry-run=server`.
 
 ---
 

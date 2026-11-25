@@ -260,6 +260,8 @@ kubectl rollout history deploy/hola -n lab03
 
 ## Cierre
 
+> **Resumen para repasar:** [Píldora · Deployment + Service](../../README.md#píldora--deployment--service-quién-hace-qué-lab-03).
+
 Avisa con "Lab 03 terminado" y conversamos las preguntas. Luego:
 
 ```sh

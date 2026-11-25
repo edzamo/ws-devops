@@ -4,26 +4,26 @@ apiVersion: apps/v1          # ojo: los Deployments viven en "apps/v1", no en "v
 kind: Deployment
 metadata:
   name: hola
-  namespace: TODO            # namespace del laboratorio
+  namespace: lab03            # namespace del laboratorio
   labels:
     app: hola
 spec:
-  replicas: TODO             # ¿cuántas ventanillas idénticas quieres? (3)
+  replicas: 3             # ¿cuántas ventanillas idénticas quieres? (3)
 
   # A QUIÉN gestiona el Deployment: los Pods con estos labels.
   selector:
     matchLabels:
-      app: TODO
+      app: hola
 
   # El MOLDE de cada Pod. Sus labels DEBEN cumplir el selector de arriba.
   template:
     metadata:
       labels:
-        app: TODO
+        app: hola
     spec:
       containers:
         - name: web
-          image: TODO        # tu imagen v1, con tag fijo (hola-banco:1.0)
+          image: hola-banco:1.0        # tu imagen v1, con tag fijo (hola-banco:1.0)
           ports:
             - containerPort: 80
           resources:
